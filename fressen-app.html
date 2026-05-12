@@ -289,40 +289,27 @@
 
   <!-- CONFIG SHEETS -->
   <div class="card" id="cfg-card" style="display:none">
-    <div class="card-title">⚙️ Configurar Google Sheets</div>
-    <div class="field">
-      <label>URL do Apps Script (Web App)</label>
-      <input type="url" id="cfg-api-url" placeholder="https://script.google.com/macros/s/...">
-      <p style="font-size:11px;color:var(--text2);margin-top:4px">Cole aqui a URL gerada após implantar o Apps Script no Google Sheets.</p>
+    <div class="card-title">⚙️ Administração</div>
+    <div class="field" id="cfg-senha-wrap">
+      <label>Senha de Acesso</label>
+      <input type="password" id="cfg-senha-input" placeholder="Digite a senha..." onkeydown="if(event.key==='Enter')verificarSenhaCfg()">
+      <button class="btn btn-gold" style="margin-top:8px" onclick="verificarSenhaCfg()">Entrar</button>
     </div>
-    <div class="field">
-      <label>Número da Maleta</label>
-      <input type="text" id="cfg-maleta" placeholder="Ex: 00013">
+    <div id="cfg-conteudo" style="display:none">
+      <div class="field">
+        <label>URL do Apps Script</label>
+        <input type="url" id="cfg-api-url" placeholder="https://script.google.com/macros/s/...">
+        <p style="font-size:11px;color:var(--text2);margin-top:4px">Cole a URL gerada após implantar o Apps Script.</p>
+      </div>
+      <button class="btn btn-gold" onclick="saveConfig()">Salvar URL</button>
+      <hr style="border:none;border-top:1px solid var(--border);margin:16px 0">
+      <p style="font-size:12px;color:var(--text2);margin-bottom:8px">⚠️ Zona de perigo</p>
+      <button class="btn btn-outline" style="border-color:#dc2626;color:#dc2626;font-size:13px" onclick="limparSheetsEstoque()">
+        🗑️ Limpar Estoque do Sheets
+      </button>
     </div>
-    <div class="field">
-      <label>Nome da Consultora</label>
-      <input type="text" id="cfg-consultora" placeholder="Ex: PAMELA BLASCHKE VASCONCELLOS">
-    </div>
-    <div class="field">
-      <label>Ciclo</label>
-      <input type="text" id="cfg-ciclo" placeholder="Ex: 12">
-    </div>
-    <div class="field">
-      <label>Data de Início</label>
-      <input type="date" id="cfg-data-inicio">
-    </div>
-    <div class="field">
-      <label>Data de Acerto</label>
-      <input type="date" id="cfg-data-acerto">
-    </div>
-    <button class="btn btn-gold" onclick="saveConfig()">Salvar Configurações</button>
-    <hr style="border:none;border-top:1px solid var(--border);margin:16px 0">
-    <p style="font-size:12px;color:var(--text2);margin-bottom:8px">⚠️ Zona de perigo — use com cuidado</p>
-    <button class="btn btn-outline" style="border-color:#dc2626;color:#dc2626;font-size:13px" onclick="limparSheetsEstoque()">
-      🗑️ Limpar Estoque do Sheets
-    </button>
   </div>
-  <p style="text-align:center;font-size:12px;color:var(--text2);margin-top:6px;cursor:pointer;padding:6px" onclick="toggleConfig()">⚙️ Configurações</p>
+  <p style="text-align:center;font-size:12px;color:var(--text2);margin-top:6px;cursor:pointer;padding:6px" onclick="toggleConfig()">⚙️ Admin</p>
 </div>
 
 <!-- ========== ESTOQUE ========== -->
@@ -496,7 +483,8 @@
   <div class="modal">
     <div class="modal-handle"></div>
     <div id="modal-item-content"></div>
-    <button class="btn btn-gold" onclick="addToCartFromModal()" style="margin-bottom:7px">Adicionar à Venda</button>
+    <button class="btn btn-gold" id="btn-modal-add" onclick="addToCartFromModal()" style="margin-bottom:7px">Adicionar à Venda</button>
+    <button class="btn btn-outline" id="btn-modal-cancelar" onclick="cancelarVendaModal()" style="margin-bottom:7px;border-color:#dc2626;color:#dc2626;display:none">🔄 Cancelar esta Venda</button>
     <button class="btn btn-outline" onclick="closeModal('modal-item')">Fechar</button>
   </div>
 </div>
@@ -519,7 +507,7 @@ let S = {
   scannerActive: false,
   currentModalItem: null,
   currentModalCliente: null,
-  apiUrl: 'https://script.google.com/macros/s/AKfycbx1znUWIFCiQjytfVXXKLSdDpAhK1lJdmPkyP1IK0w_6VtVVYc5Z-ecxxLS7lxNfr7u/exec',
+  apiUrl: 'https://script.google.com/macros/s/AKfycbwlfvcCiBLe_ZXA-iudbZ19hVsk0601bNKX9BspgOE_r1r7JVf7EnH8AHyB4ZatQo6Gig/exec',
   maleta: { numero:'', consultora:'', ciclo:'', dataInicio:'', dataAcerto:'' },
 };
 
@@ -557,8 +545,13 @@ function load() {
       S.maleta = { numero:'', consultora:'', ciclo:'', dataInicio:'', dataAcerto:'' };
     }
   } catch(e) {
-    S.maleta = { numero:'', consultora:'', ciclo:'', dataInicio:'', dataAcerto:'' };
+    S.maleta = { numero:'', consultora:'', ciclo:'', dataInicio:'', dataAcerto:'', condicional:'', conferente:'', executiva:'', dataPrevisao:'' };
   }
+  // Restaura URL salva
+  try {
+    const savedUrl = localStorage.getItem('fressen_apiUrl');
+    if (savedUrl) S.apiUrl = savedUrl;
+  } catch(e) {}
 }
 
 // ============ INIT ============
@@ -584,9 +577,9 @@ function renderMaletaCard() {
   const wrap = document.getElementById('maleta-card-wrap');
   if (!m.numero && !m.consultora) {
     wrap.innerHTML = `
-      <div class="card" style="border:1.5px dashed var(--gold);cursor:pointer" onclick="toggleConfig()">
+      <div class="card" style="border:1.5px dashed var(--gold)">
         <p style="text-align:center;color:var(--text2);font-size:13px;padding:6px 0">
-          💼 Configure sua maleta em <strong>Configurações</strong>
+          💼 Importe o PDF do condicional para carregar a maleta
         </p>
       </div>`;
     return;
@@ -597,13 +590,26 @@ function renderMaletaCard() {
       <div class="maleta-info">
         <div class="maleta-label">Maleta Nº</div>
         <div class="maleta-num">${m.numero || '—'}</div>
-        <div class="maleta-meta">${m.consultora || ''}</div>
+        <div class="maleta-meta" style="color:rgba(255,255,255,0.8);font-size:12px;margin-top:2px">${m.consultora || ''}</div>
+        ${m.executiva ? `<div style="font-size:10px;color:rgba(201,168,76,0.7);margin-top:2px">Exec: ${m.executiva}</div>` : ''}
       </div>
-      <div class="maleta-right">
-        <div class="maleta-ciclo">Ciclo</div>
-        <div class="maleta-ciclo-val">${m.ciclo || '—'}</div>
-        <div style="margin-top:6px"><div class="maleta-ciclo">Início</div><div class="maleta-ciclo-val" style="font-size:12px">${fmt_date(m.dataInicio)}</div></div>
-        <div style="margin-top:4px"><div class="maleta-ciclo">Acerto</div><div class="maleta-ciclo-val" style="font-size:12px">${fmt_date(m.dataAcerto)}</div></div>
+      <div class="maleta-right" style="text-align:right">
+        ${m.condicional ? `<div class="maleta-ciclo">Condicional</div><div class="maleta-ciclo-val" style="font-size:11px">${m.condicional}</div>` : ''}
+        ${m.conferente  ? `<div class="maleta-ciclo" style="margin-top:4px">Conferente</div><div class="maleta-ciclo-val" style="font-size:11px">${m.conferente}</div>` : ''}
+      </div>
+    </div>
+    <div class="cond-row">
+      <div class="cond-item">
+        <div class="cond-label">Liberação</div>
+        <div class="cond-val" style="font-size:12px">${fmt_date(m.dataInicio)}</div>
+      </div>
+      <div class="cond-item">
+        <div class="cond-label">Previsão</div>
+        <div class="cond-val" style="font-size:12px">${fmt_date(m.dataPrevisao)}</div>
+      </div>
+      <div class="cond-item">
+        <div class="cond-label">Acerto</div>
+        <div class="cond-val" style="font-size:12px;color:var(--danger)">${fmt_date(m.dataAcerto)}</div>
       </div>
     </div>
     <div class="cond-row">
@@ -1093,23 +1099,33 @@ async function enviarImportacao() {
 function parseMaletaFromPDF(text) {
   const m = {};
 
-  // Nome da consultora (cliente da loja = a própria consultora)
-  // Linha: "Cliente: 01382 - PAMELA BLASCHKE VASCONCELLOS CICLO Qt.: 12"
+  // Consultora = cliente da loja: "01382 - PAMELA BLASCHKE VASCONCELLOS"
   const mc = /\d{4,6}\s*-\s*([A-ZÁÉÍÓÚÂÊÎÔÛÃÕÇÀÈÌ][A-ZÁÉÍÓÚÂÊÎÔÛÃÕÇÀÈÌ\s]+?)(?:\s+CICLO|\s+CEP|\s*$)/m.exec(text);
   if (mc) m.consultora = mc[1].trim();
 
-  // Número do ciclo: "Número: 00013"
+  // Número da maleta: "Número: 00013"
   const mn = /N[uú]mero[:\s]+(\d{3,6})/i.exec(text);
-  if (mn) m.ciclo = mn[1];
+  if (mn) m.numero = mn[1];
 
-  // Número da maleta = número do condicional: "Condicional: 300017751"
+  // Número do documento condicional: "Condicional: 300017751"
   const mcond = /Condicional[:\s]+(\d{6,12})/i.exec(text);
-  if (mcond) m.numero = mcond[1];
-  else if (mn) m.numero = mn[1]; // fallback: usa ciclo se não achar condicional
+  if (mcond) m.condicional = mcond[1];
 
-  // Data início: "Data início: 10/03/2026"
+  // Conferente: "Conferênte: FINANCEIRO LOJA 2"
+  const mconf = /Confer[eê]nte[:\s]+([A-ZÁÉÍÓÚÂÊÎÔÛÃÕÇ][\w\sÁÉÍÓÚÂÊÎÔÛÃÕÇ]+?)(?:\n|Fada|\r|$)/i.exec(text);
+  if (mconf) m.conferente = mconf[1].trim();
+
+  // Executiva: "303281 - TAIANE GRAMIN DA SILVA"  (linha da Executiva)
+  const mex = /Executiva[:\s]+\d{4,6}\s*-\s*([A-ZÁÉÍÓÚÂÊÎÔÛÃÕÇ][A-ZÁÉÍÓÚÂÊÎÔÛÃÕÇ\s]+?)(?:\n|\r|$)/i.exec(text);
+  if (mex) m.executiva = mex[1].trim();
+
+  // Data início (liberação): "Data início: 10/03/2026"
   const mi = /Data\s+in[ií]cio[:\s]+([\d]{2}\/[\d]{2}\/[\d]{2,4})/i.exec(text);
   if (mi) m.dataInicio = parseDateBR(mi[1]);
+
+  // Data previsão: "Data previsão: 10/04/2026"
+  const mp = /Data\s+previs[aã]o[:\s]+([\d]{2}\/[\d]{2}\/[\d]{2,4})/i.exec(text);
+  if (mp) m.dataPrevisao = parseDateBR(mp[1]);
 
   // Data acerto: "Data acerto: 05/05/2026"
   const ma = /Data\s+acerto[:\s]+([\d]{2}\/[\d]{2}\/[\d]{2,4})/i.exec(text);
@@ -1362,24 +1378,66 @@ function renderEstoque() {
 
 // ============ SCANNER ============
 function toggleScanner(){ S.scannerActive?stopScanner():startScanner(); }
+// Contador de detecções para filtrar leituras espúrias
+let _scanHits = {};
 function startScanner(){
   const c=document.getElementById('scanner-container'); c.style.display='block';
+  _scanHits = {};
   document.getElementById('btn-scan').innerHTML=`<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg> Parar`;
-  if (!window.Quagga){showManualInput();S.scannerActive=true;return;}
-  Quagga.init({inputStream:{name:'Live',type:'LiveStream',target:c,constraints:{facingMode:'environment'}},decoder:{readers:['ean_reader','code_128_reader','code_39_reader']},locate:true},err=>{
-    if(err){showManualInput();return;}
-    Quagga.start(); S.scannerActive=true;
+  document.getElementById('scan-result').innerHTML='<p style="text-align:center;font-size:12px;color:#aaa;margin-top:6px">Aponte a câmera para o código de barras</p>';
+
+  if (!window.Quagga){ showManualInput(); S.scannerActive=true; return; }
+
+  Quagga.init({
+    inputStream:{
+      name:'Live', type:'LiveStream', target:c,
+      constraints:{ facingMode:'environment', width:{ideal:1280}, height:{ideal:720} }
+    },
+    decoder:{
+      readers:['ean_13_reader','ean_8_reader','code_128_reader','code_39_reader','upc_reader'],
+      multiple: false
+    },
+    locator:{ patchSize:'medium', halfSample:true },
+    locate: true,
+    frequency: 10
+  }, function(err){
+    if(err){ console.error('Quagga init:', err); showManualInput(); S.scannerActive=true; return; }
+    Quagga.start();
+    S.scannerActive=true;
   });
-  Quagga.onDetected(r=>{const code=r.codeResult.code;stopScanner();processBarcode(code);});
+
+  Quagga.offDetected(); // remove listeners anteriores
+  Quagga.onDetected(function(result){
+    const code = result.codeResult.code;
+    if (!code || code.length < 6) return;
+    // Exige 3 leituras consecutivas do mesmo código para confirmar
+    _scanHits[code] = (_scanHits[code] || 0) + 1;
+    if (_scanHits[code] >= 3) {
+      stopScanner();
+      processBarcode(code);
+    }
+  });
 }
 function stopScanner(){
-  try{if(window.Quagga)Quagga.stop();}catch(e){}
+  try{ if(window.Quagga){ Quagga.offDetected(); Quagga.stop(); } }catch(e){}
   document.getElementById('scanner-container').style.display='none';
   document.getElementById('btn-scan').innerHTML=`<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="8" height="8"/><rect x="14" y="2" width="8" height="8"/><rect x="2" y="14" width="8" height="8"/><path d="M14 14h2v2h-2zm4 0h2v2h-2zm-4 4h2v2h-2zm4 0h2v2h-2z"/></svg> Escanear Peça`;
   S.scannerActive=false;
+  _scanHits = {};
 }
 function showManualInput(){
-  document.getElementById('scan-result').innerHTML=`<input type="text" placeholder="Digite o código de barras" id="manual-bc" style="margin-top:6px"><button class="btn btn-gold btn-sm" style="margin-top:6px;width:100%" onclick="processBarcode(document.getElementById('manual-bc').value)">Confirmar</button>`;
+  document.getElementById('scan-result').innerHTML=`
+    <div style="margin-top:8px">
+      <input type="text" placeholder="Ref (AN1-1748) ou cód. barras (15453372)" id="manual-bc"
+        style="font-size:14px"
+        oninput="this.value=this.value.toUpperCase()"
+        onkeydown="if(event.key==='Enter')processBarcode(this.value)">
+      <button class="btn btn-gold btn-sm" style="margin-top:6px;width:100%"
+        onclick="processBarcode(document.getElementById('manual-bc').value)">
+        ✅ Confirmar
+      </button>
+    </div>`;
+  setTimeout(()=>{ const el=document.getElementById('manual-bc'); if(el) el.focus(); },100);
 }
 function processBarcode(code){
   if(!code)return; code=code.trim();
@@ -1584,6 +1642,8 @@ function populateClienteSelect(){
 function openItemModal(id){
   const p=S.produtos.find(x=>x.id==id);
   if(!p)return; S.currentModalItem=p;
+  // Encontra a venda associada a esta peça
+  const vendaAssoc = S.vendas.find(v=>v.itens&&v.itens.find(i=>i.id===p.id||i.ref===p.ref));
   document.getElementById('modal-item-content').innerHTML=`
     <div class="modal-title">${p.ref}</div>
     <p style="font-size:14px;margin-bottom:10px">${p.desc}</p>
@@ -1592,13 +1652,50 @@ function openItemModal(id){
       <div class="stat-card"><div class="stat-label">Grupo</div><div class="stat-val" style="font-size:13px">${p.grupo}</div></div>
     </div>
     ${p.barcode?`<p style="font-size:11px;color:var(--text2);margin-bottom:8px">Cód: ${p.barcode}</p>`:''}
-    ${p.vendido?'<div class="tag tag-danger" style="margin-bottom:10px">Peça já vendida</div>':''}`;
+    ${p.vendido?`<div class="tag tag-danger" style="margin-bottom:10px">Vendida${p.clienteVenda?' para '+p.clienteVenda:''} ${p.dataVenda?'em '+new Date(p.dataVenda).toLocaleDateString('pt-BR'):''}</div>`:''}
+    ${vendaAssoc?`<p style="font-size:11px;color:var(--text2)">Venda: ${vendaAssoc.id} · ${fmt(vendaAssoc.total)}</p>`:''}`;
+  // Mostrar botão correto conforme status
+  document.getElementById('btn-modal-add').style.display = p.vendido ? 'none' : 'flex';
+  document.getElementById('btn-modal-cancelar').style.display = p.vendido ? 'flex' : 'none';
   openModal('modal-item');
 }
 function addToCartFromModal(){
   if(!S.currentModalItem)return;
   if(S.currentModalItem.vendido){toast('Peça já vendida');return;}
   addToCart(S.currentModalItem); closeModal('modal-item'); showPage('vender');
+}
+
+async function cancelarVendaModal(){
+  const p = S.currentModalItem;
+  if(!p || !p.vendido) return;
+  if(!confirm('Cancelar a venda de ' + p.ref + '?\n\nA peça voltará para Disponível e o registro será removido.')) return;
+
+  // Remove venda do estado local (pelo id da peça ou ref)
+  const idxVenda = S.vendas.findIndex(v=>v.itens&&v.itens.find(i=>i.id===p.id||i.ref===p.ref));
+  let vendaId = null;
+  if(idxVenda >= 0){
+    vendaId = S.vendas[idxVenda].id;
+    // Se a venda tem só 1 item, remove a venda inteira
+    if(S.vendas[idxVenda].itens.length === 1){
+      S.vendas.splice(idxVenda, 1);
+    } else {
+      // Venda com múltiplos itens — remove só este item
+      S.vendas[idxVenda].itens = S.vendas[idxVenda].itens.filter(i=>i.id!==p.id&&i.ref!==p.ref);
+      S.vendas[idxVenda].total = S.vendas[idxVenda].itens.reduce((a,i)=>a+i.preco,0);
+    }
+  }
+
+  // Devolve peça para disponível no estado local
+  p.vendido = false;
+  p.dataVenda = '';
+  p.clienteVenda = '';
+
+  // Sincroniza com Sheets
+  await sheetsPost({ action: 'cancelarVenda', ref: p.ref, vendaId: vendaId || '' });
+
+  closeModal('modal-item');
+  save(); updateStats(); renderMaletaCard(); renderEstoque();
+  toast('✅ Venda de ' + p.ref + ' cancelada!');
 }
 
 // ============ RELATÓRIO ============
@@ -1671,28 +1768,39 @@ function compartilharRelatorio(){
 }
 
 // ============ CONFIG ============
+const CFG_SENHA = 'fressen2024'; // ← altere aqui para mudar a senha
+
 function toggleConfig(){
-  const c=document.getElementById('cfg-card');
-  c.style.display=c.style.display==='none'||!c.style.display?'block':'none';
-  if(c.style.display==='block'){
-    document.getElementById('cfg-api-url').value=S.apiUrl||'';
-    document.getElementById('cfg-maleta').value=S.maleta.numero||'';
-    document.getElementById('cfg-consultora').value=S.maleta.consultora||'';
-    document.getElementById('cfg-ciclo').value=S.maleta.ciclo||'';
-    document.getElementById('cfg-data-inicio').value=S.maleta.dataInicio||'';
-    document.getElementById('cfg-data-acerto').value=S.maleta.dataAcerto||'';
+  const c = document.getElementById('cfg-card');
+  const visible = c.style.display === 'block';
+  c.style.display = visible ? 'none' : 'block';
+  if (!visible) {
+    // Sempre começa pelo campo de senha
+    document.getElementById('cfg-senha-wrap').style.display = 'block';
+    document.getElementById('cfg-conteudo').style.display   = 'none';
+    document.getElementById('cfg-senha-input').value = '';
+    setTimeout(()=>document.getElementById('cfg-senha-input').focus(), 100);
   }
 }
+
+function verificarSenhaCfg(){
+  const senha = document.getElementById('cfg-senha-input').value;
+  if (senha === CFG_SENHA) {
+    document.getElementById('cfg-senha-wrap').style.display = 'none';
+    document.getElementById('cfg-conteudo').style.display   = 'block';
+    document.getElementById('cfg-api-url').value = S.apiUrl || '';
+  } else {
+    document.getElementById('cfg-senha-input').value = '';
+    document.getElementById('cfg-senha-input').placeholder = '❌ Senha incorreta, tente novamente';
+    setTimeout(()=>{ document.getElementById('cfg-senha-input').placeholder='Digite a senha...'; }, 2000);
+  }
+}
+
 function saveConfig(){
-  S.apiUrl=document.getElementById('cfg-api-url').value.trim();
-  S.maleta={
-    numero:document.getElementById('cfg-maleta').value.trim(),
-    consultora:document.getElementById('cfg-consultora').value.trim(),
-    ciclo:document.getElementById('cfg-ciclo').value.trim(),
-    dataInicio:document.getElementById('cfg-data-inicio').value,
-    dataAcerto:document.getElementById('cfg-data-acerto').value,
-  };
-  save(); renderMaletaCard(); toggleConfig(); toast('✅ Configurações salvas!');
+  S.apiUrl = document.getElementById('cfg-api-url').value.trim();
+  try { localStorage.setItem('fressen_apiUrl', S.apiUrl); } catch(e){}
+  toggleConfig();
+  toast('✅ URL salva!');
 }
 
 // ============ MODAL HELPERS ============
