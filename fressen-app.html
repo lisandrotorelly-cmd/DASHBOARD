@@ -5,257 +5,181 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>Fressen Joias — Consultora</title>
 <script src="https://unpkg.com/quagga@0.12.1/dist/quagga.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <style>
   :root {
-    --gold: #C9A84C;
-    --gold-light: #F0D080;
-    --gold-dark: #8B6914;
-    --black: #1A1A1A;
-    --surface: #FAFAF8;
-    --surface2: #F2F0EB;
-    --border: rgba(0,0,0,0.1);
-    --text: #1A1A1A;
-    --text2: #6B6558;
-    --danger: #C0392B;
-    --success: #1E7E34;
-    --radius: 14px;
-    --radius-sm: 8px;
+    --gold:#C9A84C;--gold-light:#F0D080;--gold-dark:#8B6914;
+    --black:#1A1A1A;--surface:#FAFAF8;--surface2:#F2F0EB;
+    --border:rgba(0,0,0,0.10);--text:#1A1A1A;--text2:#6B6558;
+    --danger:#C0392B;--success:#1E7E34;--info:#1A5C9C;
+    --radius:14px;--radius-sm:8px;
   }
-  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
-  body {
-    font-family: -apple-system, 'SF Pro Text', Helvetica, sans-serif;
-    background: var(--surface);
-    color: var(--text);
-    min-height: 100vh;
-    max-width: 430px;
-    margin: 0 auto;
-    overflow-x: hidden;
-  }
+  *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+  body{font-family:-apple-system,'SF Pro Text',Helvetica,sans-serif;background:var(--surface);color:var(--text);min-height:100vh;max-width:430px;margin:0 auto;overflow-x:hidden}
+
   /* HEADER */
-  .header {
-    background: var(--black);
-    padding: 16px 20px 12px;
-    position: sticky; top: 0; z-index: 100;
-    display: flex; align-items: center; justify-content: space-between;
-  }
-  .header-logo { color: var(--gold); font-size: 18px; font-weight: 600; letter-spacing: 2px; }
-  .header-sub { color: rgba(201,168,76,0.6); font-size: 11px; letter-spacing: 1px; }
-  .header-badge {
-    background: var(--gold); color: var(--black);
-    font-size: 11px; font-weight: 700;
-    padding: 4px 10px; border-radius: 20px;
-  }
+  .header{background:var(--black);padding:14px 18px 10px;position:sticky;top:0;z-index:100;display:flex;align-items:center;justify-content:space-between}
+  .header-logo{color:var(--gold);font-size:18px;font-weight:700;letter-spacing:2px}
+  .header-sub{color:rgba(201,168,76,0.55);font-size:10px;letter-spacing:1px}
+  .header-right{display:flex;flex-direction:column;align-items:flex-end;gap:2px}
+  .sync-dot{width:7px;height:7px;border-radius:50%;background:#555;display:inline-block;margin-left:4px;vertical-align:middle}
+  .sync-dot.ok{background:var(--success)}
+  .sync-dot.err{background:var(--danger)}
+  .sync-dot.loading{background:var(--gold);animation:pulse 1s infinite}
+  @keyframes pulse{0%,100%{opacity:1}50%{opacity:0.3}}
 
   /* NAV */
-  .nav {
-    background: var(--black);
-    display: flex; border-top: 1px solid rgba(201,168,76,0.2);
-    position: sticky; top: 56px; z-index: 99;
-  }
-  .nav-btn {
-    flex: 1; padding: 10px 4px; background: none; border: none;
-    color: rgba(201,168,76,0.5); font-size: 9px; font-weight: 600;
-    letter-spacing: 0.5px; text-transform: uppercase;
-    display: flex; flex-direction: column; align-items: center; gap: 3px;
-    cursor: pointer; transition: color 0.2s;
-  }
-  .nav-btn.active { color: var(--gold); }
-  .nav-btn svg { width: 18px; height: 18px; }
+  .nav{background:var(--black);display:flex;border-top:1px solid rgba(201,168,76,0.18);position:sticky;top:58px;z-index:99}
+  .nav-btn{flex:1;padding:9px 2px;background:none;border:none;color:rgba(201,168,76,0.45);font-size:9px;font-weight:600;letter-spacing:0.4px;text-transform:uppercase;display:flex;flex-direction:column;align-items:center;gap:2px;cursor:pointer;transition:color 0.2s}
+  .nav-btn.active{color:var(--gold)}
+  .nav-btn svg{width:18px;height:18px}
+  .nav-btn-wrap{position:relative;display:flex;flex-direction:column;align-items:center;gap:2px}
+  .cart-badge{position:absolute;top:-3px;right:-5px;background:var(--danger);color:#fff;font-size:9px;font-weight:700;width:14px;height:14px;border-radius:50%;display:flex;align-items:center;justify-content:center;display:none}
 
   /* PAGES */
-  .page { display: none; padding: 16px; min-height: calc(100vh - 110px); }
-  .page.active { display: block; }
+  .page{display:none;padding:14px;padding-bottom:24px;min-height:calc(100vh - 108px)}
+  .page.active{display:block}
 
   /* CARDS */
-  .card {
-    background: #fff; border: 0.5px solid var(--border);
-    border-radius: var(--radius); padding: 16px; margin-bottom: 12px;
-  }
-  .card-title { font-size: 13px; font-weight: 600; color: var(--text2); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 12px; }
+  .card{background:#fff;border:0.5px solid var(--border);border-radius:var(--radius);padding:14px;margin-bottom:10px}
+  .card-title{font-size:11px;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:0.6px;margin-bottom:10px}
+
+  /* MALETA CARD — destaque na home */
+  .maleta-card{background:var(--black);border-radius:var(--radius);padding:14px 16px;margin-bottom:10px;display:flex;align-items:center;gap:12px}
+  .maleta-icon{font-size:28px;line-height:1}
+  .maleta-info{flex:1}
+  .maleta-label{font-size:10px;color:rgba(201,168,76,0.6);font-weight:600;letter-spacing:1px;text-transform:uppercase}
+  .maleta-num{font-size:28px;font-weight:800;color:var(--gold);line-height:1.1}
+  .maleta-meta{font-size:11px;color:rgba(255,255,255,0.5);margin-top:2px}
+  .maleta-right{text-align:right}
+  .maleta-ciclo{font-size:10px;color:rgba(201,168,76,0.6);text-transform:uppercase;letter-spacing:1px}
+  .maleta-ciclo-val{font-size:13px;color:rgba(255,255,255,0.8);font-weight:600}
+
+  /* CONDICIONAL INFO */
+  .cond-row{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px}
+  .cond-item{background:var(--surface2);border-radius:var(--radius-sm);padding:8px 10px;flex:1;min-width:100px}
+  .cond-label{font-size:10px;color:var(--text2);font-weight:600;text-transform:uppercase;letter-spacing:0.4px}
+  .cond-val{font-size:13px;font-weight:700;color:var(--text);margin-top:2px}
+
+  /* STATS */
+  .stats-row{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px}
+  .stat-card{background:var(--surface2);border-radius:var(--radius-sm);padding:10px}
+  .stat-label{font-size:10px;color:var(--text2);font-weight:600;letter-spacing:0.4px;text-transform:uppercase}
+  .stat-val{font-size:20px;font-weight:700;color:var(--black);margin-top:2px}
+  .stat-val.gold{color:var(--gold-dark)}
 
   /* BUTTONS */
-  .btn {
-    display: flex; align-items: center; justify-content: center; gap: 8px;
-    padding: 14px 20px; border-radius: var(--radius); border: none;
-    font-size: 15px; font-weight: 600; cursor: pointer; width: 100%;
-    transition: opacity 0.15s, transform 0.1s;
-  }
-  .btn:active { opacity: 0.8; transform: scale(0.98); }
-  .btn-gold { background: var(--gold); color: var(--black); }
-  .btn-dark { background: var(--black); color: var(--gold); }
-  .btn-outline { background: none; border: 1.5px solid var(--gold); color: var(--gold-dark); }
-  .btn-danger { background: var(--danger); color: #fff; }
-  .btn-success { background: var(--success); color: #fff; }
-  .btn-sm { padding: 8px 14px; font-size: 13px; border-radius: var(--radius-sm); width: auto; }
+  .btn{display:flex;align-items:center;justify-content:center;gap:8px;padding:13px 18px;border-radius:var(--radius);border:none;font-size:15px;font-weight:600;cursor:pointer;width:100%;transition:opacity 0.15s,transform 0.1s}
+  .btn:active{opacity:0.8;transform:scale(0.98)}
+  .btn-gold{background:var(--gold);color:var(--black)}
+  .btn-dark{background:var(--black);color:var(--gold)}
+  .btn-outline{background:none;border:1.5px solid var(--gold);color:var(--gold-dark)}
+  .btn-danger{background:var(--danger);color:#fff}
+  .btn-success{background:var(--success);color:#fff}
+  .btn-sm{padding:8px 12px;font-size:13px;border-radius:var(--radius-sm);width:auto}
+  .btn-xs{padding:5px 10px;font-size:12px;border-radius:6px;width:auto}
 
   /* INPUTS */
-  input, select, textarea {
-    width: 100%; padding: 12px 14px; border: 1px solid var(--border);
-    border-radius: var(--radius-sm); font-size: 15px; background: var(--surface);
-    color: var(--text); outline: none; transition: border 0.2s;
-    -webkit-appearance: none;
-  }
-  input:focus, select:focus { border-color: var(--gold); background: #fff; }
-  label { font-size: 12px; font-weight: 600; color: var(--text2); margin-bottom: 4px; display: block; text-transform: uppercase; letter-spacing: 0.4px; }
-  .field { margin-bottom: 12px; }
+  input,select,textarea{width:100%;padding:11px 13px;border:1px solid var(--border);border-radius:var(--radius-sm);font-size:15px;background:var(--surface);color:var(--text);outline:none;transition:border 0.2s;-webkit-appearance:none}
+  input:focus,select:focus{border-color:var(--gold);background:#fff}
+  label{font-size:11px;font-weight:700;color:var(--text2);margin-bottom:3px;display:block;text-transform:uppercase;letter-spacing:0.4px}
+  .field{margin-bottom:10px}
 
-  /* STATS ROW */
-  .stats-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 12px; }
-  .stat-card { background: var(--surface2); border-radius: var(--radius-sm); padding: 12px; }
-  .stat-label { font-size: 11px; color: var(--text2); font-weight: 600; letter-spacing: 0.4px; text-transform: uppercase; }
-  .stat-val { font-size: 22px; font-weight: 700; color: var(--black); margin-top: 2px; }
-  .stat-val.gold { color: var(--gold-dark); }
+  /* SCANNER */
+  #scanner-container{width:100%;height:200px;background:#000;border-radius:var(--radius);overflow:hidden;position:relative;display:none}
+  #scanner-container video{width:100%;height:100%;object-fit:cover}
+  #scanner-container canvas{display:none}
+  .scan-overlay{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;pointer-events:none}
+  .scan-line{width:70%;height:2px;background:var(--gold);box-shadow:0 0 8px var(--gold);animation:scanPulse 1.5s ease-in-out infinite}
+  @keyframes scanPulse{0%,100%{opacity:1}50%{opacity:0.3}}
+  .scan-frame{position:absolute;inset:18px;border:2px solid rgba(201,168,76,0.35);border-radius:8px}
 
-  /* STOCK ITEM */
-  .item-row {
-    display: flex; align-items: center; gap: 10px;
-    padding: 10px 0; border-bottom: 0.5px solid var(--border);
-  }
-  .item-row:last-child { border-bottom: none; }
-  .item-code { font-size: 11px; color: var(--text2); font-family: monospace; }
-  .item-name { font-size: 13px; font-weight: 500; flex: 1; line-height: 1.3; }
-  .item-price { font-size: 14px; font-weight: 700; color: var(--gold-dark); white-space: nowrap; }
-  .item-status { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
-  .status-ok { background: var(--success); }
-  .status-sold { background: var(--danger); }
+  /* PAGAMENTOS MÚLTIPLOS */
+  .pay-opts{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:8px}
+  .pay-opt{padding:9px 6px;border:1.5px solid var(--border);border-radius:var(--radius-sm);text-align:center;font-size:12px;font-weight:600;cursor:pointer;transition:all 0.15s;color:var(--text2);background:var(--surface)}
+  .pay-opt.selected{border-color:var(--gold);background:rgba(201,168,76,0.12);color:var(--gold-dark)}
+  .pay-split{margin-top:6px}
+  .pay-split-row{display:flex;align-items:center;gap:6px;margin-bottom:4px;background:rgba(201,168,76,0.08);padding:6px 8px;border-radius:var(--radius-sm)}
+  .pay-split-label{font-size:12px;font-weight:600;color:var(--gold-dark);flex:1}
+  .pay-split-val{font-size:13px;font-weight:700;width:80px}
+  .pay-split-rm{background:none;border:none;color:var(--danger);font-size:16px;cursor:pointer;padding:2px 4px;line-height:1}
 
-  /* SCAN AREA */
-  #scanner-container {
-    width: 100%; height: 220px; background: #000; border-radius: var(--radius);
-    overflow: hidden; position: relative; display: none;
-  }
-  #scanner-container video { width: 100%; height: 100%; object-fit: cover; }
-  #scanner-container canvas { display: none; }
-  .scan-overlay {
-    position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; pointer-events: none;
-  }
-  .scan-line {
-    width: 70%; height: 2px; background: var(--gold); box-shadow: 0 0 8px var(--gold);
-    animation: scanPulse 1.5s ease-in-out infinite;
-  }
-  @keyframes scanPulse { 0%,100%{opacity:1} 50%{opacity:0.3} }
-  .scan-frame {
-    position: absolute; inset: 20px; border: 2px solid rgba(201,168,76,0.4); border-radius: 8px;
-  }
+  /* ITEM ROW */
+  .item-row{display:flex;align-items:center;gap:8px;padding:9px 0;border-bottom:0.5px solid var(--border)}
+  .item-row:last-child{border-bottom:none}
+  .item-code{font-size:10px;color:var(--text2);font-family:monospace}
+  .item-name{font-size:12px;font-weight:500;flex:1;line-height:1.3}
+  .item-price{font-size:13px;font-weight:700;color:var(--gold-dark);white-space:nowrap}
+  .item-status{width:7px;height:7px;border-radius:50%;flex-shrink:0}
+  .status-ok{background:var(--success)}
+  .status-sold{background:var(--danger)}
+
+  /* TAGS */
+  .tag{display:inline-block;padding:2px 7px;border-radius:20px;font-size:10px;font-weight:700;text-transform:uppercase}
+  .tag-gold{background:rgba(201,168,76,0.15);color:var(--gold-dark)}
+  .tag-success{background:rgba(30,126,52,0.12);color:var(--success)}
+  .tag-danger{background:rgba(192,57,43,0.12);color:var(--danger)}
+  .tag-info{background:rgba(26,92,156,0.12);color:var(--info)}
 
   /* TOAST */
-  .toast {
-    position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%);
-    background: var(--black); color: var(--gold); padding: 10px 20px;
-    border-radius: 24px; font-size: 13px; font-weight: 600;
-    z-index: 9999; white-space: nowrap;
-    animation: toastIn 0.3s ease; box-shadow: 0 4px 16px rgba(0,0,0,0.3);
-  }
-  @keyframes toastIn { from{opacity:0;transform:translateX(-50%) translateY(10px)} }
+  .toast{position:fixed;bottom:28px;left:50%;transform:translateX(-50%);background:var(--black);color:var(--gold);padding:9px 18px;border-radius:24px;font-size:13px;font-weight:600;z-index:9999;white-space:nowrap;animation:toastIn 0.3s ease;box-shadow:0 4px 16px rgba(0,0,0,0.3)}
+  @keyframes toastIn{from{opacity:0;transform:translateX(-50%) translateY(10px)}}
 
   /* MODAL */
-  .modal-bg {
-    position: fixed; inset: 0; background: rgba(0,0,0,0.6);
-    z-index: 200; display: flex; align-items: flex-end; justify-content: center;
-    display: none;
-  }
-  .modal-bg.open { display: flex; }
-  .modal {
-    background: #fff; border-radius: var(--radius) var(--radius) 0 0;
-    padding: 20px; width: 100%; max-height: 90vh; overflow-y: auto;
-    animation: slideUp 0.3s ease;
-  }
-  @keyframes slideUp { from{transform:translateY(100%)} }
-  .modal-handle { width: 36px; height: 4px; background: var(--border); border-radius: 2px; margin: 0 auto 16px; }
-  .modal-title { font-size: 17px; font-weight: 700; margin-bottom: 16px; }
-
-  /* TAG */
-  .tag {
-    display: inline-block; padding: 3px 8px; border-radius: 20px;
-    font-size: 11px; font-weight: 700; text-transform: uppercase;
-  }
-  .tag-gold { background: rgba(201,168,76,0.15); color: var(--gold-dark); }
-  .tag-success { background: rgba(30,126,52,0.12); color: var(--success); }
-  .tag-danger { background: rgba(192,57,43,0.12); color: var(--danger); }
-
-  /* SALE ROW */
-  .sale-row {
-    padding: 12px 0; border-bottom: 0.5px solid var(--border);
-    display: flex; justify-content: space-between; align-items: flex-start;
-  }
-  .sale-row:last-child { border-bottom: none; }
+  .modal-bg{position:fixed;inset:0;background:rgba(0,0,0,0.55);z-index:200;display:none;align-items:flex-end;justify-content:center}
+  .modal-bg.open{display:flex}
+  .modal{background:#fff;border-radius:var(--radius) var(--radius) 0 0;padding:18px;width:100%;max-height:90vh;overflow-y:auto;animation:slideUp 0.3s ease}
+  @keyframes slideUp{from{transform:translateY(100%)}}
+  .modal-handle{width:34px;height:4px;background:var(--border);border-radius:2px;margin:0 auto 14px}
+  .modal-title{font-size:16px;font-weight:700;margin-bottom:14px}
 
   /* SEARCH */
-  .search-wrap { position: relative; margin-bottom: 12px; }
-  .search-wrap input { padding-left: 36px; }
-  .search-icon { position: absolute; left: 10px; top: 50%; transform: translateY(-50%); color: var(--text2); font-size: 16px; }
-
-  /* SECTION */
-  .section-title {
-    font-size: 11px; font-weight: 700; color: var(--text2);
-    text-transform: uppercase; letter-spacing: 1px;
-    padding: 8px 0 6px; margin-top: 4px;
-  }
-
-  /* PAYMENT OPTS */
-  .pay-opts { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 8px; }
-  .pay-opt {
-    padding: 10px 8px; border: 1.5px solid var(--border); border-radius: var(--radius-sm);
-    text-align: center; font-size: 13px; font-weight: 600; cursor: pointer;
-    transition: all 0.15s; color: var(--text2); background: var(--surface);
-  }
-  .pay-opt.selected { border-color: var(--gold); background: rgba(201,168,76,0.1); color: var(--gold-dark); }
-
-  /* CART BADGE */
-  .cart-badge {
-    position: absolute; top: -3px; right: -3px;
-    background: var(--danger); color: #fff; font-size: 9px; font-weight: 700;
-    width: 14px; height: 14px; border-radius: 50%; display: flex; align-items: center; justify-content: center;
-  }
-  .nav-btn-wrap { position: relative; display: flex; flex-direction: column; align-items: center; gap: 3px; }
+  .search-wrap{position:relative;margin-bottom:10px}
+  .search-wrap input{padding-left:34px}
+  .search-icon{position:absolute;left:10px;top:50%;transform:translateY(-50%);color:var(--text2);font-size:15px}
 
   /* REPORT */
-  .report-bar { height: 8px; background: var(--surface2); border-radius: 4px; overflow: hidden; margin-top: 6px; }
-  .report-fill { height: 100%; background: var(--gold); border-radius: 4px; transition: width 0.6s ease; }
-
-  .divider { height: 0.5px; background: var(--border); margin: 12px 0; }
-
-  /* EMPTY STATE */
-  .empty { text-align: center; padding: 40px 20px; color: var(--text2); }
-  .empty-icon { font-size: 40px; margin-bottom: 8px; }
-  .empty p { font-size: 14px; }
+  .report-bar{height:7px;background:var(--surface2);border-radius:4px;overflow:hidden;margin-top:4px}
+  .report-fill{height:100%;background:var(--gold);border-radius:4px;transition:width 0.6s ease}
+  .divider{height:0.5px;background:var(--border);margin:10px 0}
+  .empty{text-align:center;padding:32px 16px;color:var(--text2)}
+  .empty-icon{font-size:36px;margin-bottom:6px}
+  .empty p{font-size:13px}
 
   /* CLIENTE CARD */
-  .cliente-card {
-    display: flex; align-items: center; gap: 10px;
-    padding: 10px 0; border-bottom: 0.5px solid var(--border); cursor: pointer;
-  }
-  .cliente-avatar {
-    width: 36px; height: 36px; border-radius: 50%; background: rgba(201,168,76,0.15);
-    display: flex; align-items: center; justify-content: center;
-    font-size: 14px; font-weight: 700; color: var(--gold-dark); flex-shrink: 0;
-  }
-  .cliente-info { flex: 1; }
-  .cliente-name { font-size: 14px; font-weight: 600; }
-  .cliente-phone { font-size: 12px; color: var(--text2); }
+  .cliente-card{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:0.5px solid var(--border)}
+  .cliente-avatar{width:34px;height:34px;border-radius:50%;background:rgba(201,168,76,0.15);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:var(--gold-dark);flex-shrink:0}
+  .floating-btn{position:fixed;bottom:18px;right:18px;width:50px;height:50px;border-radius:50%;background:var(--gold);color:var(--black);border:none;font-size:22px;cursor:pointer;box-shadow:0 4px 14px rgba(201,168,76,0.4);display:flex;align-items:center;justify-content:center;z-index:50}
 
-  .floating-btn {
-    position: fixed; bottom: 20px; right: 20px;
-    width: 52px; height: 52px; border-radius: 50%;
-    background: var(--gold); color: var(--black); border: none;
-    font-size: 24px; font-weight: 300; cursor: pointer;
-    box-shadow: 0 4px 14px rgba(201,168,76,0.4);
-    display: flex; align-items: center; justify-content: center;
-    z-index: 50;
-  }
+  /* SECTION TITLE */
+  .section-title{font-size:10px;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:1px;padding:6px 0 5px;margin-top:2px}
 
-  #config-section { display: none; }
+  /* SALE ROW */
+  .sale-row{padding:10px 0;border-bottom:0.5px solid var(--border);display:flex;justify-content:space-between;align-items:flex-start}
+  .sale-row:last-child{border-bottom:none}
+
+  /* SYNC BADGE */
+  .sync-badge{font-size:10px;color:var(--text2);display:flex;align-items:center;gap:3px}
 </style>
 </head>
 <body>
+<div id="file-warning" style="display:none;background:#B91C1C;color:#fff;text-align:center;font-size:13px;font-weight:600;padding:10px 16px;position:sticky;top:0;z-index:999;line-height:1.6">
+  ⚠️ App aberto por arquivo local — Sheets <strong>não conecta</strong>.<br>
+  Terminal: <code style="background:rgba(0,0,0,0.3);padding:2px 6px;border-radius:4px">cd ~/Downloads && python3 -m http.server 8080</code> → acesse <strong>localhost:8080</strong>
+</div>
 
 <!-- HEADER -->
 <div class="header">
   <div>
     <div class="header-logo">FRESSEN</div>
-    <div class="header-sub">JOIAS</div>
+    <div class="header-sub">JOIAS · CONSULTORA</div>
   </div>
-  <div id="header-info" class="header-badge">Carregando...</div>
+  <div class="header-right">
+    <div class="sync-badge">
+      Sheets <span class="sync-dot" id="sync-dot"></span>
+    </div>
+    <div style="font-size:10px;color:rgba(201,168,76,0.6)" id="header-estoque">— peças</div>
+  </div>
 </div>
 
 <!-- NAV -->
@@ -275,13 +199,13 @@
   <button class="nav-btn" onclick="showPage('vender')" id="nav-vender">
     <div class="nav-btn-wrap" style="position:relative">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
-      <span id="cart-badge" class="cart-badge" style="display:none">0</span>
+      <span id="cart-badge" class="cart-badge">0</span>
       Vender
     </div>
   </button>
   <button class="nav-btn" onclick="showPage('clientes')" id="nav-clientes">
     <div class="nav-btn-wrap">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
       Clientes
     </div>
   </button>
@@ -293,400 +217,1011 @@
   </button>
 </nav>
 
-<!-- =================== HOME =================== -->
+<!-- ========== HOME ========== -->
 <div class="page active" id="page-home">
-  <div class="section-title">Resumo do dia</div>
+
+  <!-- MALETA (condicional) -->
+  <div id="maleta-card-wrap"></div>
+
+  <!-- STATS -->
   <div class="stats-row">
-    <div class="stat-card">
-      <div class="stat-label">Vendas Hoje</div>
-      <div class="stat-val gold" id="stat-vendas-hoje">R$ 0</div>
-    </div>
-    <div class="stat-card">
-      <div class="stat-label">Itens Vendidos</div>
-      <div class="stat-val" id="stat-itens-vendidos">0</div>
-    </div>
-    <div class="stat-card">
-      <div class="stat-label">Em Estoque</div>
-      <div class="stat-val" id="stat-estoque">0</div>
-    </div>
-    <div class="stat-card">
-      <div class="stat-label">Valor Estoque</div>
-      <div class="stat-val gold" id="stat-valor-estoque">R$ 0</div>
-    </div>
+    <div class="stat-card"><div class="stat-label">Vendas Hoje</div><div class="stat-val gold" id="stat-hoje">R$ 0</div></div>
+    <div class="stat-card"><div class="stat-label">Itens Vendidos</div><div class="stat-val" id="stat-itens">0</div></div>
+    <div class="stat-card"><div class="stat-label">Em Estoque</div><div class="stat-val" id="stat-disp">0</div></div>
+    <div class="stat-card"><div class="stat-label">Valor Estoque</div><div class="stat-val gold" id="stat-vest">R$ 0</div></div>
   </div>
 
-  <div class="card" style="margin-bottom:12px">
-    <div class="card-title">Ação rápida</div>
-    <button class="btn btn-gold" style="margin-bottom:8px" onclick="showPage('vender')">
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12l7-7 7 7"/></svg>
+  <!-- AÇÕES RÁPIDAS -->
+  <div class="card">
+    <div class="card-title">Ação Rápida</div>
+    <button class="btn btn-gold" style="margin-bottom:7px" onclick="showPage('vender')">
+      <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
       Nova Venda
     </button>
-    <button class="btn btn-outline" onclick="showPage('estoque')">
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/></svg>
+    <button class="btn btn-outline" style="margin-bottom:7px" onclick="showPage('estoque')">
+      <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/></svg>
       Ver Estoque
+    </button>
+    <button class="btn btn-dark" id="btn-atualizar" onclick="atualizar()">
+      <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+      Atualizar
     </button>
   </div>
 
+  <!-- IMPORTAR PDF -->
   <div class="card">
-    <div class="card-title">Importar Condicional (PDF)</div>
-    <p style="font-size:13px;color:var(--text2);margin-bottom:12px">Importe o espelho condicional para carregar os produtos automaticamente.</p>
-    <label for="pdf-upload" class="btn btn-dark" style="cursor:pointer;display:flex;justify-content:center;gap:8px;padding:14px 20px;border-radius:14px;font-size:15px;font-weight:600">
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
-      Importar PDF
-    </label>
-    <input type="file" id="pdf-upload" accept="application/pdf" style="display:none" onchange="importPDF(this)">
-    <div id="import-status" style="margin-top:10px;font-size:13px;color:var(--text2);text-align:center"></div>
+    <div class="card-title">Importar Condicional</div>
+    <p style="font-size:13px;color:var(--text2);margin-bottom:12px">Importe o espelho condicional (PDF) para carregar as peças da maleta.</p>
+
+    <!-- Botão PDF -->
+    <div style="margin-bottom:10px">
+      <label for="pdf-upload" class="btn btn-dark" style="cursor:pointer;width:100%;justify-content:center;gap:8px;padding:12px;border-radius:12px;font-size:13px;font-weight:600;display:flex;align-items:center">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+        Importar PDF
+      </label>
+    </div>
+    <input type="file" id="pdf-upload"  accept="application/pdf" style="display:none" onchange="importPDF(this)">
+
+    <!-- Progresso -->
+    <div id="import-progress-wrap" style="display:none;margin-top:10px">
+      <div style="display:flex;justify-content:space-between;font-size:12px;color:var(--text2);margin-bottom:4px">
+        <span id="import-progress-label">Processando...</span>
+        <span id="import-progress-pct">0%</span>
+      </div>
+      <div style="background:rgba(201,168,76,0.15);border-radius:8px;height:8px;overflow:hidden">
+        <div id="import-progress-bar" style="height:100%;width:0%;background:var(--gold);border-radius:8px;transition:width 0.3s"></div>
+      </div>
+    </div>
+
+    <!-- Status -->
+    <div id="import-status" style="margin-top:8px;font-size:13px;color:var(--text2);text-align:center"></div>
+
+    <!-- Preview das peças lidas (antes de enviar) -->
+    <div id="import-preview" style="display:none;margin-top:12px">
+      <div style="font-size:12px;font-weight:600;color:var(--text2);margin-bottom:6px" id="import-preview-label"></div>
+      <div id="import-preview-list" style="font-size:12px;max-height:160px;overflow-y:auto;background:var(--surface);border-radius:8px;padding:8px 10px;line-height:1.8"></div>
+      <button class="btn btn-dark" style="margin-top:10px;width:100%;font-size:14px;font-weight:700" id="btn-enviar" onclick="enviarImportacao()">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+        Enviar para o Sheets
+      </button>
+    </div>
   </div>
 
-  <div id="config-section" class="card">
-    <div class="card-title">Configurações (Gmail)</div>
+  <!-- CONFIG SHEETS -->
+  <div class="card" id="cfg-card" style="display:none">
+    <div class="card-title">⚙️ Configurar Google Sheets</div>
     <div class="field">
-      <label>Seu Email (consultora)</label>
-      <input type="email" id="cfg-email-consultora" placeholder="seuemail@gmail.com">
+      <label>URL do Apps Script (Web App)</label>
+      <input type="url" id="cfg-api-url" placeholder="https://script.google.com/macros/s/...">
+      <p style="font-size:11px;color:var(--text2);margin-top:4px">Cole aqui a URL gerada após implantar o Apps Script no Google Sheets.</p>
     </div>
-    <button class="btn btn-dark" onclick="saveConfig()">Salvar</button>
+    <div class="field">
+      <label>Número da Maleta</label>
+      <input type="text" id="cfg-maleta" placeholder="Ex: 00013">
+    </div>
+    <div class="field">
+      <label>Nome da Consultora</label>
+      <input type="text" id="cfg-consultora" placeholder="Ex: PAMELA BLASCHKE VASCONCELLOS">
+    </div>
+    <div class="field">
+      <label>Ciclo</label>
+      <input type="text" id="cfg-ciclo" placeholder="Ex: 12">
+    </div>
+    <div class="field">
+      <label>Data de Início</label>
+      <input type="date" id="cfg-data-inicio">
+    </div>
+    <div class="field">
+      <label>Data de Acerto</label>
+      <input type="date" id="cfg-data-acerto">
+    </div>
+    <button class="btn btn-gold" onclick="saveConfig()">Salvar Configurações</button>
+    <hr style="border:none;border-top:1px solid var(--border);margin:16px 0">
+    <p style="font-size:12px;color:var(--text2);margin-bottom:8px">⚠️ Zona de perigo — use com cuidado</p>
+    <button class="btn btn-outline" style="border-color:#dc2626;color:#dc2626;font-size:13px" onclick="limparSheetsEstoque()">
+      🗑️ Limpar Estoque do Sheets
+    </button>
   </div>
-  <p style="text-align:center;font-size:12px;color:var(--text2);margin-top:8px;cursor:pointer" onclick="toggleConfig()">⚙️ Configurações</p>
+  <p style="text-align:center;font-size:12px;color:var(--text2);margin-top:6px;cursor:pointer;padding:6px" onclick="toggleConfig()">⚙️ Configurações</p>
 </div>
 
-<!-- =================== ESTOQUE =================== -->
+<!-- ========== ESTOQUE ========== -->
 <div class="page" id="page-estoque">
   <div class="section-title">Controle de Estoque</div>
-
-  <div class="card" style="margin-bottom:12px">
-    <div style="display:flex;gap:8px;align-items:center;margin-bottom:8px">
-      <div class="tag tag-success" id="tag-disponiveis">0 disponíveis</div>
-      <div class="tag tag-danger" id="tag-vendidos">0 vendidos</div>
+  <div class="card" style="margin-bottom:10px">
+    <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px">
+      <div class="tag tag-success" id="tag-disp" onclick="setFiltroStatus('disp')" style="cursor:pointer;user-select:none">0 disponíveis</div>
+      <div class="tag tag-danger"  id="tag-vend" onclick="setFiltroStatus('vend')" style="cursor:pointer;user-select:none">0 vendidos</div>
+      <div class="tag" id="tag-todos" onclick="setFiltroStatus('')" style="cursor:pointer;user-select:none;display:none;background:var(--surface2);color:var(--text2)">✕ Ver todos</div>
     </div>
     <div class="search-wrap">
       <span class="search-icon">🔍</span>
-      <input type="text" id="search-estoque" placeholder="Buscar por referência ou nome..." oninput="renderEstoque()">
+      <input type="text" id="search-estoque" placeholder="Buscar referência ou nome..." oninput="renderEstoque()">
     </div>
-    <div style="display:flex;gap:8px">
-      <select id="filter-grupo" onchange="renderEstoque()" style="flex:1;font-size:13px;padding:10px">
-        <option value="">Todos os grupos</option>
-        <option value="ANEL">Anéis</option>
-        <option value="BRINCO">Brincos</option>
-        <option value="PULSEIRA">Pulseiras</option>
-        <option value="COLAR">Colares</option>
-        <option value="CORRENTE">Correntes</option>
-        <option value="BRACELETE">Braceletes</option>
-        <option value="CHOKER">Chokers</option>
-        <option value="ESCAPULARIO">Escapulários</option>
-      </select>
-    </div>
+    <select id="filter-grupo" onchange="renderEstoque()" style="font-size:13px;padding:9px">
+      <option value="">Todos os grupos</option>
+      <option>ANEL</option><option>BRINCO</option><option>PULSEIRA</option>
+      <option>COLAR</option><option>CORRENTE</option><option>BRACELETE</option>
+      <option>CHOKER</option><option>ESCAPULARIO</option>
+    </select>
   </div>
-
   <div id="estoque-list"></div>
 </div>
 
-<!-- =================== VENDER =================== -->
+<!-- ========== VENDER ========== -->
 <div class="page" id="page-vender">
   <div class="section-title">Nova Venda</div>
 
-  <!-- Scanner -->
-  <div class="card" style="margin-bottom:12px">
-    <div class="card-title">Escanear Código de Barras</div>
+  <div class="card">
+    <div class="card-title">Escanear Código</div>
     <button class="btn btn-dark" id="btn-scan" onclick="toggleScanner()">
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="8" height="8"/><rect x="14" y="2" width="8" height="8"/><rect x="2" y="14" width="8" height="8"/><path d="M14 14h2v2h-2zm4 0h2v2h-2zm-4 4h2v2h-2zm4 0h2v2h-2z"/></svg>
+      <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="8" height="8"/><rect x="14" y="2" width="8" height="8"/><rect x="2" y="14" width="8" height="8"/><path d="M14 14h2v2h-2zm4 0h2v2h-2zm-4 4h2v2h-2zm4 0h2v2h-2z"/></svg>
       Escanear Peça
     </button>
-    <div id="scanner-container" style="margin-top:10px">
+    <div id="scanner-container" style="margin-top:8px">
       <div class="scan-frame"></div>
       <div class="scan-overlay"><div class="scan-line"></div></div>
     </div>
-    <div id="scan-result" style="margin-top:8px;font-size:13px;color:var(--text2);text-align:center"></div>
+    <div id="scan-result" style="margin-top:6px;font-size:13px;color:var(--text2);text-align:center"></div>
   </div>
 
-  <!-- Busca manual -->
-  <div class="card" style="margin-bottom:12px">
-    <div class="card-title">Ou buscar manualmente</div>
-    <div class="search-wrap">
+  <div class="card">
+    <div class="card-title">Busca Manual</div>
+    <div class="search-wrap" style="margin-bottom:0">
       <span class="search-icon">🔍</span>
       <input type="text" id="search-vender" placeholder="Referência ou nome da peça..." oninput="renderVenderBusca()">
     </div>
-    <div id="vender-busca-list" style="max-height:200px;overflow-y:auto"></div>
+    <div id="vender-busca-list" style="max-height:180px;overflow-y:auto"></div>
   </div>
 
-  <!-- Carrinho -->
-  <div class="card" style="margin-bottom:12px">
-    <div class="card-title">Carrinho de Venda</div>
-    <div id="cart-list">
-      <div class="empty"><div class="empty-icon">🛍️</div><p>Nenhuma peça adicionada</p></div>
-    </div>
+  <div class="card">
+    <div class="card-title">Carrinho</div>
+    <div id="cart-list"><div class="empty"><div class="empty-icon">🛍️</div><p>Nenhuma peça adicionada</p></div></div>
     <div class="divider"></div>
     <div style="display:flex;justify-content:space-between;align-items:center">
-      <span style="font-size:14px;font-weight:600;color:var(--text2)">Total</span>
+      <span style="font-size:13px;font-weight:600;color:var(--text2)">Total</span>
       <span style="font-size:20px;font-weight:700;color:var(--gold-dark)" id="cart-total">R$ 0,00</span>
     </div>
   </div>
 
-  <!-- Cliente + Pagamento -->
-  <div class="card" style="margin-bottom:12px" id="venda-form">
-    <div class="card-title">Cliente & Pagamento</div>
-    <div class="field">
-      <label>Cliente</label>
-      <select id="select-cliente" style="font-size:14px;padding:12px">
+  <div class="card">
+    <div class="card-title">Cliente</div>
+    <div style="display:flex;gap:6px">
+      <select id="select-cliente" style="flex:1;font-size:14px;padding:11px">
         <option value="">Selecionar cliente...</option>
       </select>
+      <button class="btn btn-sm btn-outline" onclick="openModal('modal-cliente')">+ Novo</button>
     </div>
-    <div class="field">
-      <label>Forma de Pagamento</label>
-      <div class="pay-opts">
-        <div class="pay-opt selected" onclick="selectPay(this,'Pix')">⚡ Pix</div>
-        <div class="pay-opt" onclick="selectPay(this,'Dinheiro')">💵 Dinheiro</div>
-        <div class="pay-opt" onclick="selectPay(this,'Crédito')">💳 Crédito</div>
-        <div class="pay-opt" onclick="selectPay(this,'Débito')">🏧 Débito</div>
-      </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Formas de Pagamento</div>
+    <p style="font-size:11px;color:var(--text2);margin-bottom:7px">Selecione uma ou mais formas e informe o valor de cada.</p>
+    <div class="pay-opts">
+      <div class="pay-opt" onclick="togglePayOpt(this,'Pix')">⚡ Pix</div>
+      <div class="pay-opt" onclick="togglePayOpt(this,'Dinheiro')">💵 Dinheiro</div>
+      <div class="pay-opt" onclick="togglePayOpt(this,'Crédito')">💳 Crédito</div>
+      <div class="pay-opt" onclick="togglePayOpt(this,'Débito')">🏧 Débito</div>
+      <div class="pay-opt" onclick="togglePayOpt(this,'Carteira')">📒 Carteira (Fiado)</div>
+      <div class="pay-opt" onclick="togglePayOpt(this,'Transferência')">🏦 Transferência</div>
     </div>
-    <div class="field">
-      <label>Observação (opcional)</label>
+    <div class="pay-split" id="pay-split-rows"></div>
+    <div id="pay-total-check" style="font-size:12px;color:var(--text2);margin-top:4px;text-align:right"></div>
+
+    <div class="field" style="margin-top:8px">
+      <label>Observação</label>
       <input type="text" id="venda-obs" placeholder="Ex: 2x no crédito, entrega...">
     </div>
     <button class="btn btn-gold" onclick="finalizarVenda()">
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+      <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
       Finalizar Venda
     </button>
   </div>
 </div>
 
-<!-- =================== CLIENTES =================== -->
+<!-- ========== CLIENTES ========== -->
 <div class="page" id="page-clientes">
-  <div class="section-title">Clientes Cadastrados</div>
+  <div class="section-title">Clientes</div>
   <div class="search-wrap">
     <span class="search-icon">🔍</span>
-    <input type="text" id="search-clientes" placeholder="Buscar cliente..." oninput="renderClientes()">
+    <input type="text" id="search-clientes" placeholder="Buscar..." oninput="renderClientes()">
   </div>
   <div id="clientes-list"></div>
-  <button class="floating-btn" onclick="openModalCliente()">+</button>
+  <button class="floating-btn" onclick="openModal('modal-cliente')">+</button>
 </div>
 
-<!-- =================== RELATÓRIO =================== -->
+<!-- ========== RELATÓRIO ========== -->
 <div class="page" id="page-relatorio">
   <div class="section-title">Fechamento & Relatório</div>
-
   <div class="stats-row">
-    <div class="stat-card">
-      <div class="stat-label">Saldo Inicial</div>
-      <div class="stat-val gold" id="rel-inicial">R$ 0</div>
-    </div>
-    <div class="stat-card">
-      <div class="stat-label">Total Vendido</div>
-      <div class="stat-val gold" id="rel-vendido">R$ 0</div>
-    </div>
-    <div class="stat-card">
-      <div class="stat-label">Itens no Estoque</div>
-      <div class="stat-val" id="rel-estoque-qtd">0</div>
-    </div>
-    <div class="stat-card">
-      <div class="stat-label">Projeção Saldo Final</div>
-      <div class="stat-val gold" id="rel-projecao">R$ 0</div>
-    </div>
+    <div class="stat-card"><div class="stat-label">Saldo Inicial</div><div class="stat-val gold" id="rel-inicial">R$ 0</div></div>
+    <div class="stat-card"><div class="stat-label">Total Vendido</div><div class="stat-val gold" id="rel-vendido">R$ 0</div></div>
+    <div class="stat-card"><div class="stat-label">Restante Estoque</div><div class="stat-val" id="rel-disp-qtd">0</div></div>
+    <div class="stat-card"><div class="stat-label">Projeção Saldo Final</div><div class="stat-val gold" id="rel-projecao">R$ 0</div></div>
   </div>
-
   <div class="card">
     <div class="card-title">Progresso das Vendas</div>
-    <div style="display:flex;justify-content:space-between;font-size:12px;color:var(--text2);margin-bottom:4px">
-      <span>Vendas</span>
-      <span id="rel-pct">0%</span>
+    <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--text2);margin-bottom:3px">
+      <span>Vendas realizadas</span><span id="rel-pct">0%</span>
     </div>
     <div class="report-bar"><div class="report-fill" id="rel-bar" style="width:0%"></div></div>
-    <p style="font-size:12px;color:var(--text2);margin-top:8px" id="rel-desc">0 de 0 peças vendidas</p>
+    <p style="font-size:11px;color:var(--text2);margin-top:6px" id="rel-desc">0 de 0 peças vendidas</p>
   </div>
-
   <div class="card">
     <div class="card-title">Por Categoria</div>
     <div id="rel-categorias"></div>
   </div>
-
+  <div class="card">
+    <div class="card-title">Por Forma de Pagamento</div>
+    <div id="rel-pagamentos"></div>
+  </div>
   <div class="card">
     <div class="card-title">Últimas Vendas</div>
     <div id="rel-vendas-list"></div>
   </div>
-
   <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:4px">
-    <button class="btn btn-outline" onclick="exportCSV()" style="font-size:13px;padding:12px">
-      📋 Exportar CSV
-    </button>
-    <button class="btn btn-dark" onclick="compartilharRelatorio()" style="font-size:13px;padding:12px">
-      📤 Compartilhar
-    </button>
+    <button class="btn btn-outline" onclick="exportCSV()" style="font-size:13px;padding:11px">📋 CSV</button>
+    <button class="btn btn-dark" onclick="compartilharRelatorio()" style="font-size:13px;padding:11px">📤 Compartilhar</button>
   </div>
 </div>
 
-<!-- MODAL NOVA VENDA CONFIRMAÇÃO -->
+<!-- ===== MODAIS ===== -->
+<!-- Confirmação venda -->
 <div class="modal-bg" id="modal-confirmacao">
   <div class="modal">
     <div class="modal-handle"></div>
     <div class="modal-title">✅ Venda Confirmada!</div>
     <div id="modal-venda-detalhes"></div>
     <div class="divider"></div>
-    <button class="btn btn-gold" style="margin-bottom:8px" onclick="closeModal('modal-confirmacao')">Fechar</button>
+    <button class="btn btn-gold" onclick="closeModal('modal-confirmacao')">Fechar</button>
   </div>
 </div>
 
-<!-- MODAL CLIENTE -->
+<!-- Cliente -->
 <div class="modal-bg" id="modal-cliente">
   <div class="modal">
     <div class="modal-handle"></div>
     <div class="modal-title">➕ Novo Cliente</div>
     <div class="field"><label>Nome *</label><input type="text" id="cli-nome" placeholder="Nome completo"></div>
     <div class="field"><label>Telefone *</label><input type="tel" id="cli-tel" placeholder="(51) 99999-9999"></div>
-    <div class="field"><label>Email</label><input type="email" id="cli-email" placeholder="email@exemplo.com"></div>
-    <div class="field"><label>CPF</label><input type="text" id="cli-cpf" placeholder="000.000.000-00"></div>
-    <button class="btn btn-gold" onclick="salvarCliente()" style="margin-bottom:8px">Salvar Cliente</button>
+    <div class="field"><label>Email <span style="font-weight:400;color:var(--text2)">(opcional)</span></label><input type="email" id="cli-email" placeholder="email@exemplo.com"></div>
+    <div class="field"><label>Data de Nascimento <span style="font-weight:400;color:var(--text2)">(opcional)</span></label><input type="date" id="cli-nasc"></div>
+    <button class="btn btn-gold" onclick="salvarCliente()" style="margin-bottom:7px">Salvar Cliente</button>
     <button class="btn btn-outline" onclick="closeModal('modal-cliente')">Cancelar</button>
   </div>
 </div>
 
-<!-- MODAL DETALHE ITEM -->
+<!-- Detalhe item -->
 <div class="modal-bg" id="modal-item">
   <div class="modal">
     <div class="modal-handle"></div>
     <div id="modal-item-content"></div>
-    <button class="btn btn-gold" onclick="addToCartFromModal()" style="margin-bottom:8px">Adicionar à Venda</button>
+    <button class="btn btn-gold" onclick="addToCartFromModal()" style="margin-bottom:7px">Adicionar à Venda</button>
     <button class="btn btn-outline" onclick="closeModal('modal-item')">Fechar</button>
+  </div>
+</div>
+
+<!-- Detalhe cliente -->
+<div class="modal-bg" id="modal-cliente-detalhe">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div id="modal-cliente-detalhe-content"></div>
+    <button class="btn btn-danger" onclick="excluirClienteModal()" style="margin-bottom:7px">🗑️ Excluir Cliente</button>
+    <button class="btn btn-outline" onclick="closeModal('modal-cliente-detalhe')">Fechar</button>
   </div>
 </div>
 
 <script>
 // ============ STATE ============
-let state = {
-  produtos: [],
-  vendas: [],
-  clientes: [],
-  cart: [],
-  payMethod: 'Pix',
+let S = {
+  produtos: [], vendas: [], clientes: [], cart: [],
+  paySelected: {}, // { metodo: valor }
   scannerActive: false,
   currentModalItem: null,
-  configEmailConsultora: '',
+  currentModalCliente: null,
+  apiUrl: 'https://script.google.com/macros/s/AKfycbx1znUWIFCiQjytfVXXKLSdDpAhK1lJdmPkyP1IK0w_6VtVVYc5Z-ecxxLS7lxNfr7u/exec',
+  maleta: { numero:'', consultora:'', ciclo:'', dataInicio:'', dataAcerto:'' },
 };
 
-// ============ PERSIST ============
+// ============ PERSIST LOCAL ============
+// REGRA: localStorage NÃO guarda produtos/vendas/clientes.
+// Só guarda maleta (número, consultora) que vem do PDF importado.
+
 function save() {
   try {
-    localStorage.setItem('fressen_state', JSON.stringify({
-      produtos: state.produtos,
-      vendas: state.vendas,
-      clientes: state.clientes,
-      configEmailConsultora: state.configEmailConsultora,
+    localStorage.setItem('fressen_maleta_v2', JSON.stringify({
+      numero: S.maleta.numero, consultora: S.maleta.consultora,
+      ciclo: S.maleta.ciclo, dataInicio: S.maleta.dataInicio, dataAcerto: S.maleta.dataAcerto
     }));
   } catch(e) {}
 }
+
 function load() {
+  // Limpa TODAS as chaves antigas sem exceção
   try {
-    const d = JSON.parse(localStorage.getItem('fressen_state') || '{}');
-    if (d.produtos) state.produtos = d.produtos;
-    if (d.vendas) state.vendas = d.vendas;
-    if (d.clientes) state.clientes = d.clientes;
-    if (d.configEmailConsultora) state.configEmailConsultora = d.configEmailConsultora;
+    for (let i = localStorage.length - 1; i >= 0; i--) {
+      const k = localStorage.key(i);
+      if (k && k.startsWith('fressen') && k !== 'fressen_maleta_v2') {
+        localStorage.removeItem(k);
+      }
+    }
   } catch(e) {}
+  // Restaura maleta só se existir chave nova e tiver número real
+  try {
+    const raw = localStorage.getItem('fressen_maleta_v2');
+    const m   = raw ? JSON.parse(raw) : {};
+    if (m && m.numero) {
+      S.maleta = { numero: m.numero, consultora: m.consultora||'',
+                   ciclo: m.ciclo||'', dataInicio: m.dataInicio||'', dataAcerto: m.dataAcerto||'' };
+    } else {
+      S.maleta = { numero:'', consultora:'', ciclo:'', dataInicio:'', dataAcerto:'' };
+    }
+  } catch(e) {
+    S.maleta = { numero:'', consultora:'', ciclo:'', dataInicio:'', dataAcerto:'' };
+  }
 }
 
 // ============ INIT ============
+// Garante estado limpo antes de qualquer coisa
+S.produtos = []; S.vendas = []; S.clientes = []; S.cart = [];
 load();
-updateAll();
+renderMaletaCard();
+updateStats();
+
+// Conecta ao Sheets (só funciona via http://)
+if (window.location.protocol === 'file:') {
+  const warn = document.getElementById('file-warning');
+  if (warn) warn.style.display = 'block';
+  const dot = document.getElementById('sync-dot');
+  if (dot) dot.className = 'sync-dot err';
+} else {
+  setTimeout(function() { carregarDoSheets(true); }, 800);
+}
+
+// ============ MALETA CARD ============
+function renderMaletaCard() {
+  const m = S.maleta;
+  const wrap = document.getElementById('maleta-card-wrap');
+  if (!m.numero && !m.consultora) {
+    wrap.innerHTML = `
+      <div class="card" style="border:1.5px dashed var(--gold);cursor:pointer" onclick="toggleConfig()">
+        <p style="text-align:center;color:var(--text2);font-size:13px;padding:6px 0">
+          💼 Configure sua maleta em <strong>Configurações</strong>
+        </p>
+      </div>`;
+    return;
+  }
+  wrap.innerHTML = `
+    <div class="maleta-card">
+      <div class="maleta-icon">💼</div>
+      <div class="maleta-info">
+        <div class="maleta-label">Maleta Nº</div>
+        <div class="maleta-num">${m.numero || '—'}</div>
+        <div class="maleta-meta">${m.consultora || ''}</div>
+      </div>
+      <div class="maleta-right">
+        <div class="maleta-ciclo">Ciclo</div>
+        <div class="maleta-ciclo-val">${m.ciclo || '—'}</div>
+        <div style="margin-top:6px"><div class="maleta-ciclo">Início</div><div class="maleta-ciclo-val" style="font-size:12px">${fmt_date(m.dataInicio)}</div></div>
+        <div style="margin-top:4px"><div class="maleta-ciclo">Acerto</div><div class="maleta-ciclo-val" style="font-size:12px">${fmt_date(m.dataAcerto)}</div></div>
+      </div>
+    </div>
+    <div class="cond-row">
+      <div class="cond-item"><div class="cond-label">Total Peças</div><div class="cond-val">${S.produtos.length}</div></div>
+      <div class="cond-item"><div class="cond-label">Vendidas</div><div class="cond-val" style="color:var(--success)">${S.produtos.filter(p=>p.vendido).length}</div></div>
+      <div class="cond-item"><div class="cond-label">Disponíveis</div><div class="cond-val">${S.produtos.filter(p=>!p.vendido).length}</div></div>
+    </div>`;
+}
+function fmt_date(d) {
+  if (!d) return '—';
+  try { return new Date(d + 'T12:00:00').toLocaleDateString('pt-BR'); } catch(e) { return d; }
+}
+
+// ============ STATS ============
+function updateStats() {
+  const disp = S.produtos.filter(p=>!p.vendido);
+  const vend = S.produtos.filter(p=>p.vendido);
+  const hoje = new Date().toDateString();
+  const vendasHoje = S.vendas.filter(v => new Date(v.data).toDateString() === hoje);
+  const totalHoje = vendasHoje.reduce((a,v)=>a+v.total,0);
+  const valorEst = disp.reduce((a,p)=>a+p.preco,0);
+  document.getElementById('stat-hoje').textContent = fmt(totalHoje);
+  document.getElementById('stat-itens').textContent = vend.length;
+  document.getElementById('stat-disp').textContent = disp.length;
+  document.getElementById('stat-vest').textContent = fmt(valorEst);
+  document.getElementById('header-estoque').textContent = disp.length + ' peças';
+  document.getElementById('tag-disp').textContent = disp.length + ' disponíveis';
+  document.getElementById('tag-vend').textContent = vend.length + ' vendidos';
+}
+function fmt(v){ return 'R$ ' + Number(v).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2}); }
 
 // ============ PAGES ============
 function showPage(p) {
-  document.querySelectorAll('.page').forEach(el => el.classList.remove('active'));
-  document.querySelectorAll('.nav-btn').forEach(el => el.classList.remove('active'));
-  document.getElementById('page-' + p).classList.add('active');
-  document.getElementById('nav-' + p).classList.add('active');
-  if (p === 'relatorio') updateRelatorio();
-  if (p === 'estoque') renderEstoque();
-  if (p === 'clientes') { renderClientes(); populateClienteSelect(); }
-  if (p === 'vender') { populateClienteSelect(); renderVenderBusca(); }
-  if (state.scannerActive) stopScanner();
+  document.querySelectorAll('.page').forEach(el=>el.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(el=>el.classList.remove('active'));
+  document.getElementById('page-'+p).classList.add('active');
+  document.getElementById('nav-'+p).classList.add('active');
+  if (p==='relatorio') updateRelatorio();
+  if (p==='estoque') renderEstoque();
+  if (p==='clientes') { renderClientes(); populateClienteSelect(); }
+  if (p==='vender') { populateClienteSelect(); renderVenderBusca(); }
+  if (S.scannerActive) stopScanner();
 }
 
-// ============ PDF IMPORT ============
-function importPDF(input) {
+// ============ SHEETS API ============
+// Padrão skill google-workspace-system:
+//   LEITURA  → GET + JSONP (contorna CORS, recebe resposta)
+//   ESCRITA  → POST + no-cors (não tenta ler resposta — Apps Script redireciona POST)
+
+function setSyncStatus(s) {
+  const dot = document.getElementById('sync-dot');
+  dot.className = 'sync-dot' + (s ? ' ' + s : '');
+}
+
+// JSONP — para leitura e ping
+function sheetsGet(action) {
+  return new Promise(function(resolve) {
+    if (!S.apiUrl) { resolve(null); return; }
+    setSyncStatus('loading');
+    const cb = '_cb' + Date.now() + Math.floor(Math.random() * 9999);
+    const timer = setTimeout(function() {
+      delete window[cb]; setSyncStatus('err'); resolve(null);
+    }, 15000);
+    window[cb] = function(res) {
+      clearTimeout(timer); delete window[cb];
+      setSyncStatus(res && res.status === 'ok' ? 'ok' : 'err');
+      resolve(res && res.status === 'ok' ? res.data : null);
+    };
+    const sc = document.createElement('script');
+    sc.src = S.apiUrl + '?action=' + encodeURIComponent(action) + '&callback=' + cb;
+    sc.onerror = function() { clearTimeout(timer); delete window[cb]; setSyncStatus('err'); resolve(null); };
+    document.head.appendChild(sc);
+    setTimeout(function() { try { document.head.removeChild(sc); } catch(e) {} }, 18000);
+  });
+}
+
+// POST no-cors — para escrita (não retorna resposta, isso é normal)
+function sheetsPost(payload) {
+  if (!S.apiUrl) return Promise.resolve();
+  setSyncStatus('loading');
+  return fetch(S.apiUrl, {
+    method: 'POST',
+    mode: 'no-cors',                    // sem CORS — Apps Script aceita assim
+    body: JSON.stringify(payload),      // sem Content-Type header — no-cors não permite
+  }).then(function() {
+    setSyncStatus('ok');                // no-cors = sempre "opaque", assumimos ok
+  }).catch(function() {
+    setSyncStatus('err');
+  });
+}
+
+// ── Carrega tudo do Sheets (fonte de verdade) ──
+async function carregarDoSheets(silencioso) {
+  if (!S.apiUrl) return;
+  if (!silencioso) toast('🔄 Atualizando...');
+  const btn = document.getElementById('btn-atualizar');
+  if (btn) { btn.disabled = true; btn.textContent = '⏳ Atualizando...'; }
+
+  const res = await sheetsGet('listAll');
+
+  if (btn) { btn.disabled = false; btn.innerHTML = '<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg> Atualizar'; }
+
+  // SEMPRE zera estado — com ou sem resposta do Sheets
+  S.produtos = []; S.vendas = []; S.clientes = [];
+  console.log('[Sheets] Resposta recebida:', res ? 'OK' : 'NULL/ERRO');
+
+  if (!res) {
+    // Sheets não respondeu — mantém zerado, mostra aviso
+    updateStats(); renderMaletaCard(); renderEstoque(); renderClientes(); populateClienteSelect();
+    if (!silencioso) toast('❌ Sem resposta do Sheets. Verifique o Apps Script.');
+    return;
+  }
+
+  console.log('[Sheets] estoque:', (res.estoque||[]).length, 'vendas:', (res.vendas||[]).length, 'clientes:', (res.clientes||[]).length);
+
+  if (res.estoque) {
+    S.produtos = res.estoque.map(function(item) {
+      return {
+        id:           String(item.id),
+        ref:          item.ref,
+        grupo:        item.grupo,
+        desc:         item.desc,
+        preco:        Number(item.preco) || 0,
+        barcode:      item.barcode || '',
+        vendido:      item.status === 'Vendido',
+        dataVenda:    item.data_venda || '',
+        clienteVenda: item.cliente_venda || '',
+      };
+    });
+  }
+  if (res.vendas) {
+    S.vendas = res.vendas.map(function(v) {
+      return {
+        id:       String(v.id_venda),
+        data:     v.data_venda,
+        cliente:  v.cliente,
+        total:    Number(v.preco) || 0,
+        itens:    [{ ref: v.ref, grupo: v.grupo, desc: v.descricao, preco: Number(v.preco) || 0 }],
+        pagamentos: {},
+        obs:      v.observacao || '',
+      };
+    });
+  }
+  if (res.clientes) {
+    S.clientes = res.clientes.map(function(c) {
+      return { id: String(c.id), nome: c.nome, tel: c.telefone, email: c.email || '', nasc: c.nascimento || '' };
+    });
+  }
+
+  updateStats(); renderMaletaCard(); renderEstoque(); renderClientes(); populateClienteSelect();
+  if (!silencioso) toast('✅ Dados atualizados! ' + S.produtos.length + ' peças · ' + S.clientes.length + ' clientes.');
+}
+
+// ── Botão Atualizar ──
+async function atualizar() {
+  await carregarDoSheets(false);
+}
+
+// Mantém syncAll e syncFromSheets como aliases internos para compatibilidade
+async function syncAll() { await carregarDoSheets(false); }
+async function syncFromSheets() { await carregarDoSheets(false); }
+
+// ── Limpa aba Estoque do Sheets e zera o app ──
+async function limparSheetsEstoque() {
+  if (!confirm('Isso vai apagar TODAS as peças do Sheets. Tem certeza?')) return;
+  toast('🗑️ Limpando Sheets...');
+  await sheetsPost({ action: 'resetEstoque' });
+  await sheetsPost({ action: 'resetVendas' });
+  await new Promise(function(r){ setTimeout(r, 2000); });
+  S.produtos = []; S.vendas = []; S.clientes = [];
+  updateStats(); renderMaletaCard(); renderEstoque(); renderClientes();
+  toast('✅ Sheets limpo! Importe o PDF para carregar o estoque.');
+}
+
+// ── Venda → POST no-cors por item ──
+async function pushVendaSheets(venda, cliente) {
+  if (!S.apiUrl) return;
+  const dataFmt = new Date(venda.data).toLocaleString('pt-BR');
+  const pagStr  = Object.entries(venda.pagamentos).map(([k,v]) => k + ': R$' + Number(v).toFixed(2)).join(' | ');
+  for (const item of venda.itens) {
+    await sheetsPost({
+      action: 'addVenda',
+      venda: {
+        IDVenda:          venda.id,
+        NumMaleta:        S.maleta.numero || '',
+        Consultora:       S.maleta.consultora || '',
+        DataVenda:        dataFmt,
+        Cliente:          cliente ? cliente.nome : '',
+        Referencia:       item.ref,
+        Grupo:            item.grupo,
+        Descricao:        item.desc,
+        Preco:            item.preco,
+        FormaPagamento:   pagStr,
+        Observacao:       venda.obs || '',
+      }
+    });
+    await sheetsPost({
+      action: 'marcarVendido',
+      ref:          item.ref,
+      numMaleta:    S.maleta.numero || '',
+      dataVenda:    dataFmt,
+      clienteNome:  cliente ? cliente.nome : '',
+    });
+  }
+}
+
+// ── Cliente → POST no-cors ──
+async function pushClienteSheets(c) {
+  if (!S.apiUrl) return;
+  await sheetsPost({
+    action: 'addCliente',
+    cliente: { ID: c.id, Nome: c.nome, Telefone: c.tel, Email: c.email || '', DataNascimento: c.nasc || '' }
+  });
+}
+
+// ── Excluir cliente → POST no-cors ──
+async function deleteClienteSheets(id) {
+  if (!S.apiUrl) return;
+  await sheetsPost({ action: 'deleteCliente', id });
+}
+
+// testarConexao removido — substituído por carregarDoSheets
+
+// ============ PDF / FOTO IMPORT ============
+
+// Estado da importação pendente (aguardando Enviar)
+let _importPendente = [];
+let _importHashAtual = '';
+let _filtroStatus = ''; // '' = todos | 'disp' = disponíveis | 'vend' = vendidos
+
+function setFiltroStatus(f) {
+  _filtroStatus = f;
+  // Destaque visual nas tags
+  const tDisp  = document.getElementById('tag-disp');
+  const tVend  = document.getElementById('tag-vend');
+  const tTodos = document.getElementById('tag-todos');
+  tDisp.style.opacity  = (!f || f === 'disp') ? '1' : '0.4';
+  tVend.style.opacity  = (!f || f === 'vend') ? '1' : '0.4';
+  tTodos.style.display = f ? 'inline-flex' : 'none';
+  renderEstoque();
+}
+
+function setProgress(pct, label) {
+  const wrap = document.getElementById('import-progress-wrap');
+  const bar  = document.getElementById('import-progress-bar');
+  const pctEl= document.getElementById('import-progress-pct');
+  const lblEl= document.getElementById('import-progress-label');
+  if (!wrap) return;
+  if (pct === null) { wrap.style.display='none'; return; }
+  wrap.style.display='block';
+  bar.style.width = pct + '%';
+  pctEl.textContent = pct + '%';
+  if (label) lblEl.textContent = label;
+}
+
+function setStatus(msg, cor) {
+  const el = document.getElementById('import-status');
+  if (el) { el.textContent = msg; el.style.color = cor || 'var(--text2)'; }
+}
+
+function hashProdutos(prods) {
+  return prods.map(p => p.ref + '|' + p.preco).sort().join(',');
+}
+
+// ── Verifica duplicata contra Sheets ──
+function checarDuplicata(novasPecas) {
+  const refsExistentes = new Set(S.produtos.map(p => p.ref));
+  const duplicadas = novasPecas.filter(p => refsExistentes.has(p.ref));
+  return duplicadas;
+}
+
+// ── Mostra preview antes de enviar ──
+function mostrarPreview(prods, tipo) {
+  const wrap = document.getElementById('import-preview');
+  const lbl  = document.getElementById('import-preview-label');
+  const list = document.getElementById('import-preview-list');
+  if (!wrap) return;
+  if (!prods.length) { wrap.style.display='none'; return; }
+  lbl.textContent = prods.length + ' peças encontradas via ' + tipo + ' — revise e clique Enviar:';
+  list.innerHTML = prods.map(p =>
+    '<div style="padding:2px 0;border-bottom:1px solid rgba(201,168,76,0.1)">' +
+    '<strong style="color:var(--gold)">' + p.ref + '</strong> · ' + p.desc + ' · <strong>R$' + p.preco.toFixed(2) + '</strong></div>'
+  ).join('');
+  wrap.style.display='block';
+}
+
+// ── Importa PDF ──
+async function importPDF(input) {
   const file = input.files[0];
   if (!file) return;
-  document.getElementById('import-status').textContent = 'Lendo PDF...';
+  input.value = '';
+  _importPendente = [];
+  document.getElementById('import-preview').style.display='none';
+  setProgress(5, 'Carregando PDF...');
+  setStatus('');
 
-  const reader = new FileReader();
-  reader.onload = function(e) {
-    const text = e.target.result;
-    parsePDFText(text);
-  };
-  reader.readAsText(file);
+  try {
+    // Configura worker do pdf.js
+    // workerSrc vazio = processa no thread principal (sem CDN externa, sem bloqueio CORS)
+    if (!window.pdfjsLib) {
+      setProgress(null); setStatus('❌ pdf.js não carregou. Verifique sua conexão.', 'red'); return;
+    }
+    pdfjsLib.GlobalWorkerOptions.workerSrc = '';
 
-  // Fallback: tenta via FileReader como ArrayBuffer para extrair texto bruto
-  const reader2 = new FileReader();
-  reader2.onload = function(e) {
-    try {
-      const bytes = new Uint8Array(e.target.result);
-      let str = '';
-      for (let i = 0; i < bytes.length; i++) {
-        if (bytes[i] > 31 && bytes[i] < 127) str += String.fromCharCode(bytes[i]);
-        else str += ' ';
+    const arrayBuffer = await file.arrayBuffer();
+    setProgress(20, 'Abrindo PDF...');
+
+    const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+    const numPages = pdf.numPages;
+    let textoTotal = '';
+
+    for (let i = 1; i <= numPages; i++) {
+      setProgress(Math.round(20 + (i / numPages) * 50), 'Lendo página ' + i + ' de ' + numPages + '...');
+      const page    = await pdf.getPage(i);
+      const content = await page.getTextContent();
+      const items   = content.items;
+
+      // Agrupa itens por linha usando posição Y
+      // Tolerância maior (8px) para lidar com variações de baseline do pdf.js
+      const linhasMap = {};
+      for (const item of items) {
+        if (!item.str || !item.str.trim()) continue;
+        const y = item.transform ? Math.round(item.transform[5] / 5) * 5 : 0; // quantiza a cada 5px (calibrado no PDF Fressen)
+        const x = item.transform ? item.transform[4] : 0;
+        if (!linhasMap[y]) linhasMap[y] = [];
+        linhasMap[y].push({ x, str: item.str });
       }
-      parsePDFText(str);
-    } catch(err) {}
-  };
-  reader2.readAsArrayBuffer(file);
+
+      // Ordena por Y decrescente (pdf.js: Y cresce de baixo para cima)
+      const ys = Object.keys(linhasMap).map(Number).sort(function(a,b){ return b - a; });
+      for (const y of ys) {
+        // Ordena fragmentos da linha por X crescente
+        const frags = linhasMap[y].sort(function(a,b){ return a.x - b.x; });
+        const linha = frags.map(function(f){ return f.str; }).join(' ').replace(/\s+/g,' ').trim();
+        if (linha) textoTotal += linha + '\n';
+      }
+    }
+
+    // Log das primeiras 30 linhas para debug
+    const _linhasDebug = textoTotal.split('\n').filter(Boolean);
+    console.log('[PDF] Total linhas:', _linhasDebug.length);
+    console.log('[PDF] Linhas 15-30:', _linhasDebug.slice(15,30));
+
+    setProgress(75, 'Identificando peças...');
+    const prods = parsePDFText(textoTotal);
+
+    // Extrai dados da maleta do cabeçalho e atualiza automaticamente
+    setProgress(85, 'Lendo dados da maleta...');
+    const dadosMaleta = parseMaletaFromPDF(textoTotal);
+    if (dadosMaleta.numero || dadosMaleta.consultora) {
+      S.maleta = Object.assign({}, S.maleta, dadosMaleta);
+      save();
+      renderMaletaCard();
+      console.log('[PDF] Maleta detectada:', S.maleta);
+    }
+
+    setProgress(90, 'Verificando duplicatas...');
+    finalizarLeitura(prods, 'PDF');
+
+  } catch(err) {
+    setProgress(null);
+    setStatus('❌ Erro ao processar PDF: ' + err.message, 'red');
+    console.error('PDF error:', err);
+  }
 }
 
+// ── Importa Foto(s) via Claude Vision ──
+async function importFoto(input) {
+  const files = Array.from(input.files);
+  if (!files.length) return;
+  input.value = '';
+  _importPendente = [];
+  document.getElementById('import-preview').style.display='none';
+
+  setProgress(5, 'Preparando imagens...');
+  setStatus('');
+
+  const imagens = [];
+  for (let i=0; i<files.length; i++) {
+    setProgress(Math.round(5 + (i/files.length)*30), 'Carregando foto ' + (i+1) + ' de ' + files.length + '...');
+    const b64 = await new Promise(function(res) {
+      const r = new FileReader();
+      r.onload = function(e) { res(e.target.result.split(',')[1]); };
+      r.readAsDataURL(files[i]);
+    });
+    imagens.push({ type:'image', source:{ type:'base64', media_type: files[i].type || 'image/jpeg', data: b64 } });
+  }
+
+  setProgress(40, 'Enviando para leitura inteligente...');
+
+  try {
+    const resp = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'anthropic-version': '2023-06-01', 'x-api-key': '' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 2000,
+        messages: [{
+          role: 'user',
+          content: [
+            ...imagens,
+            { type:'text', text:'Você é um leitor de documentos de jóias/semijoias. Analise esta imagem de um espelho condicional ou documento de peças. Extraia TODAS as peças visíveis. Para cada peça retorne APENAS um JSON array no formato: [{"ref":"XX1-0000","desc":"Descrição da peça","grupo":"ANEL","preco":99.00,"barcode":"12345678"}]. Grupo deve ser: ANEL, BRINCO, COLAR, PULSEIRA, BRACELETE, CORRENTE, CHOKER ou OUTROS. Retorne SOMENTE o JSON, sem texto adicional.' }
+          ]
+        }]
+      })
+    });
+
+    setProgress(75, 'Processando resposta...');
+    const data = await resp.json();
+    const txt  = (data.content || []).map(function(b) { return b.text||''; }).join('');
+
+    let prods = [];
+    try {
+      const match = txt.match(/\[[\s\S]*\]/);
+      if (match) prods = JSON.parse(match[0]).map(function(p) {
+        return { ref: p.ref||'', desc: p.desc||'', grupo: p.grupo||'OUTROS', preco: Number(p.preco)||0, barcode: p.barcode||'' };
+      });
+    } catch(e) { prods = []; }
+
+    setProgress(90, 'Verificando duplicatas...');
+    finalizarLeitura(prods, 'Foto');
+
+  } catch(err) {
+    setProgress(null);
+    setStatus('❌ Erro na leitura por foto. Tente o PDF.', 'red');
+  }
+}
+
+// ── Finaliza leitura (PDF ou Foto) — verifica duplicata e mostra preview ──
+function finalizarLeitura(prods, tipo) {
+  setProgress(null);
+
+  if (!prods || !prods.length) {
+    setStatus('⚠️ Nenhuma peça encontrada. Verifique o arquivo.', 'orange');
+    return;
+  }
+
+  // Verifica duplicata
+  const duplicadas = checarDuplicata(prods);
+  if (duplicadas.length === prods.length) {
+    setStatus('⚠️ Esse documento já está no banco de dados! Todas as peças já foram importadas.', '#C9A84C');
+    return;
+  }
+  if (duplicadas.length > 0) {
+    const novas = prods.filter(function(p) { return !S.produtos.find(function(x) { return x.ref === p.ref; }); });
+    setStatus('ℹ️ ' + duplicadas.length + ' peças já existem no Sheets. Serão importadas apenas as ' + novas.length + ' novas.', '#C9A84C');
+    prods = novas;
+  }
+
+  _importPendente = prods.map(function(p) {
+    return { id: String(Date.now()) + String(Math.floor(Math.random() * 9999)), ref: p.ref, desc: p.desc, grupo: p.grupo||'OUTROS', preco: Number(p.preco)||0, barcode: p.barcode||'', vendido: false };
+  });
+
+  mostrarPreview(_importPendente, tipo);
+  setProgress(100, 'Pronto! Clique em Enviar para confirmar.');
+  setTimeout(function() { setProgress(null); }, 1500);
+}
+
+// ── Botão Enviar: grava no Sheets e no estado local ──
+async function enviarImportacao() {
+  if (!_importPendente.length) return;
+  const btn = document.getElementById('btn-enviar');
+  if (btn) { btn.disabled=true; btn.textContent='⏳ Enviando...'; }
+  setProgress(20, 'Enviando para o Sheets...');
+
+  const rows = _importPendente.map(function(p) {
+    return { ID: p.id, Ref: p.ref, Grupo: p.grupo, Descricao: p.desc, Preco: p.preco, Barcode: p.barcode||'', Status:'Disponível', NumMaleta: S.maleta.numero||'' };
+  });
+
+  await sheetsPost({ action: 'saveEstoque', rows });
+  setProgress(70, 'Aguardando confirmação...');
+  await new Promise(function(r) { setTimeout(r, 2500); });
+  setProgress(100, 'Concluído!');
+
+  // Atualiza estado local
+  S.produtos = [...S.produtos, ..._importPendente];
+  _importPendente = [];
+  document.getElementById('import-preview').style.display='none';
+  setStatus('✅ ' + rows.length + ' peças enviadas para o Sheets!', 'green');
+
+  updateStats(); renderMaletaCard(); renderEstoque();
+  if (btn) { btn.disabled=false; btn.innerHTML='<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg> Enviar para o Sheets'; }
+  setTimeout(function() { setProgress(null); }, 1500);
+}
+
+// ── Extrai dados da maleta do cabeçalho do PDF ──
+function parseMaletaFromPDF(text) {
+  const m = {};
+
+  // Nome da consultora (cliente da loja = a própria consultora)
+  // Linha: "Cliente: 01382 - PAMELA BLASCHKE VASCONCELLOS CICLO Qt.: 12"
+  const mc = /\d{4,6}\s*-\s*([A-ZÁÉÍÓÚÂÊÎÔÛÃÕÇÀÈÌ][A-ZÁÉÍÓÚÂÊÎÔÛÃÕÇÀÈÌ\s]+?)(?:\s+CICLO|\s+CEP|\s*$)/m.exec(text);
+  if (mc) m.consultora = mc[1].trim();
+
+  // Número do ciclo: "Número: 00013"
+  const mn = /N[uú]mero[:\s]+(\d{3,6})/i.exec(text);
+  if (mn) m.ciclo = mn[1];
+
+  // Número da maleta = número do condicional: "Condicional: 300017751"
+  const mcond = /Condicional[:\s]+(\d{6,12})/i.exec(text);
+  if (mcond) m.numero = mcond[1];
+  else if (mn) m.numero = mn[1]; // fallback: usa ciclo se não achar condicional
+
+  // Data início: "Data início: 10/03/2026"
+  const mi = /Data\s+in[ií]cio[:\s]+([\d]{2}\/[\d]{2}\/[\d]{2,4})/i.exec(text);
+  if (mi) m.dataInicio = parseDateBR(mi[1]);
+
+  // Data acerto: "Data acerto: 05/05/2026"
+  const ma = /Data\s+acerto[:\s]+([\d]{2}\/[\d]{2}\/[\d]{2,4})/i.exec(text);
+  if (ma) m.dataAcerto = parseDateBR(ma[1]);
+
+  return m;
+}
+
+function parseDateBR(s) {
+  const p = s.split('/');
+  if (p.length !== 3) return s;
+  const ano = p[2].length === 2 ? '20' + p[2] : p[2];
+  return ano + '-' + p[1] + '-' + p[0];
+}
+
+// ── Parser de peças — formato real Fressen ──
+// Linha: "350896 AN1-1748 ANEL BANHADO EM OURO 18K SOLITÁRIO ZIRCÔNIA 5MM [22] 89,00 1 89,00"
+// Bcode: "15453372 ¨"
 function parsePDFText(text) {
-  // Extrai linhas com padrão: CÓDIGO REFERÊNCIA DESCRIÇÃO VALOR QTD TOTAL
-  const linhas = text.split(/\n|\r/).map(l => l.trim()).filter(Boolean);
-  const prods = [];
+  // ── Calibrado no PDF real Fressen (espelho condicional Aethos) ──
+  //
+  // Estrutura de cada produto no PDF (2 linhas no pdf.js):
+  //   Linha A: "350896 AN1-1748 ANEL BANHADO EM OURO 18K SOLITÁRIO ZIRCÔNIA 5MM [22] 89,00 1 89,00"
+  //   Linha B: "15453372 ¨"   ← barcode (às vezes em linha separada, às vezes junto com ¨)
+  //
+  // Estratégia:
+  //   1) Detectar linha de produto pela presença da REFERÊNCIA (XX1-XXXX)
+  //   2) Extrair campos por posição — não depende da linha inteira estar junta
+  //   3) Buscar barcode na linha seguinte (só dígitos, 8-14 chars)
+
+  const reRef    = /([A-Z]{2,4}[0-9]-[0-9][0-9A-Z\-]+)/;          // referência: AN1-1748, BR1-0152-3N etc
+  const reCod    = /^(\d{4,6})\s/;                                   // código interno: 350896
+  const rePreco  = /(\d{1,4},\d{2})\s+\d+\s+\d{1,4},\d{2}\s*$/;   // "89,00 1 89,00" no fim
+  const reBarcode= /^(\d{8,14})(\s*[¨"]?\s*)?$/;                    // barcode puro (com ou sem ¨)
+  const reGrupo  = /GRUPO[:\s]*\d+\s*-\s*([A-ZÁÉÍÓÚÂÊÎÔÛÃÕÇÀÈÌa-záéíóúâêîôûãõçàèì\s]+)/i;
+
   const grupoMap = {
-    'ANEL': 'ANEL', 'BRINCO': 'BRINCO', 'PULSEIRA': 'PULSEIRA',
-    'COLAR': 'COLAR', 'CORRENTE': 'CORRENTE', 'BRACELETE': 'BRACELETE',
-    'CHOKER': 'CHOKER', 'ESCAPULARIO': 'ESCAPULARIO', 'ESCAPULÁRIO': 'ESCAPULARIO'
+    'ANEL':'ANEL','BRACELETE':'BRACELETE','BRINCO':'BRINCO',
+    'CHOKER':'CHOKER','COLAR':'COLAR','CORRENTE':'CORRENTE',
+    'ESCAPULARIO':'ESCAPULARIO','PULSEIRA':'PULSEIRA','CONJUNTO':'CONJUNTO'
   };
-  let currentGrupo = '';
-  const refPattern = /([A-Z]{2}[0-9]-[0-9A-Z\-]+)\s+(.+?)\s+([0-9]+,[0-9]{2})\s+([0-9]+)\s+([0-9]+,[0-9]{2})/;
-  const barPattern = /^([0-9]{8,14})$/;
+
+  // Limpa linhas — remove linhas de rodapé/cabeçalho, ¨ solto, linha de assinatura
+  const linhas = text.split('\n')
+    .map(function(l){ return l.trim(); })
+    .filter(function(l){
+      if (!l) return false;
+      if (/^[¨"\s]+$/.test(l)) return false;           // linha só com ¨
+      if (/^Assinatura/.test(l)) return false;
+      if (/^SOLICITAMOS/.test(l)) return false;
+      if (/^CASO VOLTEM/.test(l)) return false;
+      if (/^PEÇAS COM/.test(l)) return false;
+      if (/^Página\s+\d/.test(l)) return false;
+      if (/^Desenvolvido/.test(l)) return false;
+      return true;
+    });
+
+  let grupo = 'OUTROS', prods = [], refs = new Set();
+
+  console.log('[PDF] Total linhas (filtradas):', linhas.length);
+  console.log('[PDF] Amostra linhas 10-20:', linhas.slice(10,20));
 
   for (let i = 0; i < linhas.length; i++) {
     const l = linhas[i];
-    // Detecta grupo
-    for (const k in grupoMap) {
-      if (l.includes('GRUPO') && l.includes(k)) { currentGrupo = grupoMap[k]; break; }
-      if (l.toUpperCase() === k) { currentGrupo = grupoMap[k]; break; }
+
+    // ── Detecta linha de GRUPO ──────────────────────────────
+    const mg = reGrupo.exec(l);
+    if (mg) {
+      const graw = mg[1].trim().toUpperCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'');
+      grupo = grupoMap[graw] || mg[1].trim().toUpperCase();
+      continue;
     }
-    const m = refPattern.exec(l);
-    if (m) {
-      const preco = parseFloat(m[3].replace(',','.'));
-      // Pega código de barras da próxima linha se for numérico
-      let barcode = '';
-      if (i+1 < linhas.length && barPattern.test(linhas[i+1].trim())) {
-        barcode = linhas[i+1].trim();
-        i++;
-      }
-      // Verifica se produto já existe (não duplicar)
-      if (!state.produtos.find(p => p.ref === m[1])) {
-        prods.push({
-          id: Date.now() + Math.random(),
-          ref: m[1].trim(),
-          desc: m[2].trim(),
-          preco,
-          grupo: currentGrupo || 'OUTROS',
-          barcode,
-          vendido: false,
-        });
+
+    // ── Detecta linha de PRODUTO ────────────────────────────
+    // Precisa ter uma referência no formato XX1-XXXX
+    const mr = reRef.exec(l);
+    if (!mr) continue;
+    const ref = mr[1].trim();
+    if (refs.has(ref)) continue;
+
+    // Preço: últimos tokens "89,00 1 89,00"
+    const mp = rePreco.exec(l);
+    if (!mp) continue;
+    const preco = parseFloat(mp[1].replace(',','.'));
+    if (preco <= 0 || preco >= 10000) continue;
+
+    // Descrição: tudo entre a REF e o preço
+    const posRef   = l.indexOf(ref) + ref.length;
+    const posPreco = l.lastIndexOf(mp[1]);
+    let desc = l.substring(posRef, posPreco).trim();
+    desc = desc.replace(/\s*\[\d+[A-Z]*\]\s*$/,'').trim(); // remove [22] [16] [CRISTAL]
+    if (!desc) desc = ref;
+
+    // Barcode: na linha seguinte (só números, 8-14 dígitos, com ou sem ¨)
+    let barcode = '';
+    if (i + 1 < linhas.length) {
+      const proxLinha = linhas[i+1].replace(/[¨"\s]/g,'');  // remove ¨ e espaços
+      if (/^\d{8,14}$/.test(proxLinha)) {
+        barcode = proxLinha;
+        i++; // consome a linha do barcode
       }
     }
+
+    refs.add(ref);
+    prods.push({ ref, desc, preco, grupo, barcode });
   }
 
-  if (prods.length > 0) {
-    state.produtos = [...state.produtos, ...prods];
-    save();
-    document.getElementById('import-status').textContent = `✅ ${prods.length} peças importadas!`;
-    updateAll();
-    toast(`${prods.length} peças importadas com sucesso!`);
-  } else {
-    // Fallback: importa do espelho embutido (dados do PDF anexado)
-    importarDadosPDF();
-  }
+  console.log('[PDF] Peças encontradas:', prods.length);
+  if (prods.length > 0) console.log('[PDF] Primeiras 3:', JSON.stringify(prods.slice(0,3)));
+  return prods;
 }
-
-function importarDadosPDF() {
-  // Dados extraídos manualmente do PDF Espelho Condicional Pamela Vasconcellos
+function importarDadosEmbutidos() {
   const dados = [
     {ref:'AN1-1748',desc:'Anel Banhado 18K Solitário Zircônia 5mm',grupo:'ANEL',preco:89,barcode:'15453372'},
     {ref:'AN1-1724',desc:'Anel Banhado 18K Coração Cravejado',grupo:'ANEL',preco:99,barcode:'15374974'},
@@ -786,499 +1321,393 @@ function importarDadosPDF() {
     {ref:'PL1-1181',desc:'Pulseira 18K Corrente Elo Português Dupla 8mm 18cm',grupo:'PULSEIRA',preco:199,barcode:'15193735'},
     {ref:'PL1-1175',desc:'Pulseira 18K Rabo de Rato Estrela Oito Pontas 16cm',grupo:'PULSEIRA',preco:229,barcode:'15162854'},
   ];
-
-  const novos = dados.filter(d => !state.produtos.find(p => p.ref === d.ref)).map(d => ({
-    ...d, id: Date.now() + Math.random(), vendido: false,
-  }));
-
-  state.produtos = [...state.produtos, ...novos];
-  save();
-  document.getElementById('import-status').textContent = `✅ ${novos.length} peças importadas!`;
-  updateAll();
-  toast(`${novos.length} peças carregadas com sucesso!`);
+  const novos = dados.filter(d=>!S.produtos.find(p=>p.ref===d.ref)).map(d=>({...d,id:Date.now()+Math.random(),vendido:false}));
+  S.produtos=[...S.produtos,...novos]; save();
+  document.getElementById('import-status').textContent=`✅ ${novos.length} peças carregadas!`;
+  updateStats(); renderMaletaCard(); toast(`${novos.length} peças carregadas!`);
 }
-
-// ============ UPDATE ALL ============
-function updateAll() {
-  const disponíveis = state.produtos.filter(p => !p.vendido);
-  const vendidos = state.produtos.filter(p => p.vendido);
-  const totalVendas = state.vendas.reduce((a,v) => a + v.total, 0);
-  const valorEstoque = disponíveis.reduce((a,p) => a + p.preco, 0);
-
-  document.getElementById('stat-vendas-hoje').textContent = fmt(totalVendas);
-  document.getElementById('stat-itens-vendidos').textContent = vendidos.length;
-  document.getElementById('stat-estoque').textContent = disponíveis.length;
-  document.getElementById('stat-valor-estoque').textContent = fmt(valorEstoque);
-  document.getElementById('header-info').textContent = `${disponíveis.length} peças`;
-
-  updateCartBadge();
-}
-
-function fmt(v) { return 'R$ ' + v.toLocaleString('pt-BR', {minimumFractionDigits:2, maximumFractionDigits:2}); }
 
 // ============ ESTOQUE ============
 function renderEstoque() {
-  const q = (document.getElementById('search-estoque').value || '').toLowerCase();
-  const g = document.getElementById('filter-grupo').value;
-  const list = document.getElementById('estoque-list');
-  const disp = state.produtos.filter(p => !p.vendido);
-  const vend = state.produtos.filter(p => p.vendido);
-  document.getElementById('tag-disponiveis').textContent = disp.length + ' disponíveis';
-  document.getElementById('tag-vendidos').textContent = vend.length + ' vendidos';
-
-  const filtered = state.produtos.filter(p => {
-    const matchQ = !q || p.ref.toLowerCase().includes(q) || p.desc.toLowerCase().includes(q);
-    const matchG = !g || p.grupo === g;
-    return matchQ && matchG;
+  const q=(document.getElementById('search-estoque').value||'').toLowerCase();
+  const g=document.getElementById('filter-grupo').value;
+  const filtered=S.produtos.filter(p=>{
+    if (!q||p.ref.toLowerCase().includes(q)||p.desc.toLowerCase().includes(q)) {
+      if (g && p.grupo !== g) return false;
+      if (_filtroStatus === 'disp' && p.vendido) return false;
+      if (_filtroStatus === 'vend' && !p.vendido) return false;
+      return true;
+    }
+    return false;
   });
-
-  if (!filtered.length) {
-    list.innerHTML = '<div class="empty"><div class="empty-icon">💎</div><p>Nenhuma peça encontrada</p></div>';
-    return;
-  }
-
-  list.innerHTML = filtered.map(p => `
-    <div class="card" style="margin-bottom:8px;cursor:pointer" onclick="openItemModal('${p.id}')">
-      <div class="item-row" style="border:none;padding:0">
-        <div class="item-status ${p.vendido ? 'status-sold' : 'status-ok'}"></div>
+  const list=document.getElementById('estoque-list');
+  if (!filtered.length){list.innerHTML='<div class="empty"><div class="empty-icon">💎</div><p>Nenhuma peça encontrada</p></div>';return;}
+  list.innerHTML=filtered.map(p=>`
+    <div class="card" style="margin-bottom:7px;cursor:pointer" onclick="openItemModal('${p.id}')">
+      <div style="display:flex;align-items:center;gap:8px">
+        <div class="item-status ${p.vendido?'status-sold':'status-ok'}"></div>
         <div style="flex:1">
-          <div class="item-code">${p.ref} ${p.barcode ? '· ' + p.barcode : ''}</div>
-          <div class="item-name">${p.desc}</div>
-          <div style="display:flex;gap:6px;margin-top:4px">
+          <div style="font-size:10px;color:var(--text2);font-family:monospace">${p.ref} ${p.barcode?'· '+p.barcode:''}</div>
+          <div style="font-size:12px;font-weight:500;line-height:1.3">${p.desc}</div>
+          <div style="display:flex;gap:5px;margin-top:4px">
             <span class="tag tag-gold">${p.grupo}</span>
-            ${p.vendido ? '<span class="tag tag-danger">Vendido</span>' : '<span class="tag tag-success">Disponível</span>'}
+            ${p.vendido?'<span class="tag tag-danger">Vendido</span>':'<span class="tag tag-success">Disponível</span>'}
           </div>
         </div>
-        <div class="item-price">${fmt(p.preco)}</div>
+        <div style="font-size:13px;font-weight:700;color:var(--gold-dark);white-space:nowrap">${fmt(p.preco)}</div>
       </div>
-    </div>
-  `).join('');
+    </div>`).join('');
+  updateStats();
 }
 
 // ============ SCANNER ============
-function toggleScanner() {
-  if (state.scannerActive) stopScanner();
-  else startScanner();
-}
-
-function startScanner() {
-  const container = document.getElementById('scanner-container');
-  container.style.display = 'block';
-  document.getElementById('btn-scan').innerHTML = `
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-    Parar Scanner`;
-
-  if (!window.Quagga) {
-    // Fallback manual se Quagga não carregar
-    document.getElementById('scan-result').innerHTML = `
-      <input type="text" placeholder="Digite o código de barras manualmente" id="manual-barcode" style="margin-top:8px">
-      <button class="btn btn-gold btn-sm" style="margin-top:8px;width:100%" onclick="processBarcode(document.getElementById('manual-barcode').value)">Confirmar</button>`;
-    state.scannerActive = true;
-    return;
-  }
-
-  Quagga.init({
-    inputStream: {
-      name: 'Live',
-      type: 'LiveStream',
-      target: container,
-      constraints: { facingMode: 'environment' },
-    },
-    decoder: { readers: ['ean_reader', 'code_128_reader', 'code_39_reader'] },
-    locate: true,
-  }, function(err) {
-    if (err) {
-      document.getElementById('scan-result').innerHTML = `
-        <p style="color:var(--danger);margin-bottom:8px">Câmera indisponível. Digite o código:</p>
-        <input type="text" placeholder="Código de barras" id="manual-barcode">
-        <button class="btn btn-gold btn-sm" style="margin-top:8px;width:100%" onclick="processBarcode(document.getElementById('manual-barcode').value)">Confirmar</button>`;
-      return;
-    }
-    Quagga.start();
-    state.scannerActive = true;
+function toggleScanner(){ S.scannerActive?stopScanner():startScanner(); }
+function startScanner(){
+  const c=document.getElementById('scanner-container'); c.style.display='block';
+  document.getElementById('btn-scan').innerHTML=`<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg> Parar`;
+  if (!window.Quagga){showManualInput();S.scannerActive=true;return;}
+  Quagga.init({inputStream:{name:'Live',type:'LiveStream',target:c,constraints:{facingMode:'environment'}},decoder:{readers:['ean_reader','code_128_reader','code_39_reader']},locate:true},err=>{
+    if(err){showManualInput();return;}
+    Quagga.start(); S.scannerActive=true;
   });
-
-  Quagga.onDetected(function(result) {
-    const code = result.codeResult.code;
-    stopScanner();
-    processBarcode(code);
-  });
+  Quagga.onDetected(r=>{const code=r.codeResult.code;stopScanner();processBarcode(code);});
 }
-
-function stopScanner() {
-  try { if (window.Quagga) Quagga.stop(); } catch(e) {}
-  document.getElementById('scanner-container').style.display = 'none';
-  document.getElementById('btn-scan').innerHTML = `
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="8" height="8"/><rect x="14" y="2" width="8" height="8"/><rect x="2" y="14" width="8" height="8"/><path d="M14 14h2v2h-2zm4 0h2v2h-2zm-4 4h2v2h-2zm4 0h2v2h-2z"/></svg>
-    Escanear Peça`;
-  state.scannerActive = false;
+function stopScanner(){
+  try{if(window.Quagga)Quagga.stop();}catch(e){}
+  document.getElementById('scanner-container').style.display='none';
+  document.getElementById('btn-scan').innerHTML=`<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="8" height="8"/><rect x="14" y="2" width="8" height="8"/><rect x="2" y="14" width="8" height="8"/><path d="M14 14h2v2h-2zm4 0h2v2h-2zm-4 4h2v2h-2zm4 0h2v2h-2z"/></svg> Escanear Peça`;
+  S.scannerActive=false;
 }
-
-function processBarcode(code) {
-  if (!code) return;
-  code = code.trim();
-  document.getElementById('scan-result').textContent = `Código: ${code}`;
-  // Busca por barcode ou ref
-  const prod = state.produtos.find(p =>
-    p.barcode === code || p.ref.toLowerCase() === code.toLowerCase()
-  );
-  if (!prod) {
-    toast('❌ Peça não encontrada: ' + code);
-    return;
-  }
-  if (prod.vendido) {
-    toast('⚠️ Esta peça já foi vendida!');
-    return;
-  }
-  addToCart(prod);
+function showManualInput(){
+  document.getElementById('scan-result').innerHTML=`<input type="text" placeholder="Digite o código de barras" id="manual-bc" style="margin-top:6px"><button class="btn btn-gold btn-sm" style="margin-top:6px;width:100%" onclick="processBarcode(document.getElementById('manual-bc').value)">Confirmar</button>`;
+}
+function processBarcode(code){
+  if(!code)return; code=code.trim();
+  const p=S.produtos.find(x=>x.barcode===code||x.ref.toLowerCase()===code.toLowerCase());
+  if(!p){toast('❌ Peça não encontrada: '+code);return;}
+  if(p.vendido){toast('⚠️ Peça já vendida!');return;}
+  addToCart(p);
 }
 
 // ============ CARRINHO ============
-function addToCart(prod) {
-  if (state.cart.find(c => c.id === prod.id)) {
-    toast('Peça já está no carrinho');
-    return;
-  }
-  state.cart.push(prod);
-  updateCartUI();
-  toast(`✅ ${prod.ref} adicionada ao carrinho`);
+function addToCart(p){
+  if(S.cart.find(c=>c.id===p.id)){toast('Peça já no carrinho');return;}
+  S.cart.push(p); updateCartUI(); toast(`✅ ${p.ref} adicionada`);
 }
-
-function removeFromCart(id) {
-  state.cart = state.cart.filter(c => c.id !== id);
-  updateCartUI();
-}
-
-function updateCartUI() {
-  const list = document.getElementById('cart-list');
-  const total = state.cart.reduce((a,c) => a + c.preco, 0);
-  document.getElementById('cart-total').textContent = fmt(total);
-  updateCartBadge();
-
-  if (!state.cart.length) {
-    list.innerHTML = '<div class="empty"><div class="empty-icon">🛍️</div><p>Nenhuma peça adicionada</p></div>';
-    return;
-  }
-  list.innerHTML = state.cart.map(p => `
+function removeFromCart(id){ S.cart=S.cart.filter(c=>c.id!==id); updateCartUI(); updatePaySplit(); }
+function updateCartUI(){
+  const total=S.cart.reduce((a,c)=>a+c.preco,0);
+  document.getElementById('cart-total').textContent=fmt(total);
+  const badge=document.getElementById('cart-badge');
+  badge.style.display=S.cart.length?'flex':'none';
+  badge.textContent=S.cart.length;
+  const list=document.getElementById('cart-list');
+  if(!S.cart.length){list.innerHTML='<div class="empty"><div class="empty-icon">🛍️</div><p>Nenhuma peça adicionada</p></div>';return;}
+  list.innerHTML=S.cart.map(p=>`
     <div class="item-row">
-      <div style="flex:1">
-        <div class="item-code">${p.ref}</div>
-        <div class="item-name">${p.desc}</div>
-      </div>
-      <div style="display:flex;align-items:center;gap:8px">
+      <div style="flex:1"><div class="item-code">${p.ref}</div><div class="item-name">${p.desc}</div></div>
+      <div style="display:flex;align-items:center;gap:6px">
         <div class="item-price">${fmt(p.preco)}</div>
-        <button onclick="removeFromCart('${p.id}')" style="background:none;border:none;color:var(--danger);font-size:18px;cursor:pointer;padding:4px">×</button>
+        <button onclick="removeFromCart('${p.id}')" style="background:none;border:none;color:var(--danger);font-size:18px;cursor:pointer;padding:2px 4px">×</button>
       </div>
-    </div>
-  `).join('');
-}
-
-function updateCartBadge() {
-  const badge = document.getElementById('cart-badge');
-  if (state.cart.length > 0) {
-    badge.style.display = 'flex';
-    badge.textContent = state.cart.length;
-  } else {
-    badge.style.display = 'none';
-  }
+    </div>`).join('');
+  updatePaySplit();
 }
 
 // ============ BUSCA MANUAL ============
-function renderVenderBusca() {
-  const q = (document.getElementById('search-vender').value || '').toLowerCase();
-  const list = document.getElementById('vender-busca-list');
-  if (!q) { list.innerHTML = ''; return; }
-  const filtered = state.produtos.filter(p =>
-    !p.vendido && (p.ref.toLowerCase().includes(q) || p.desc.toLowerCase().includes(q))
-  ).slice(0, 8);
-  if (!filtered.length) { list.innerHTML = '<p style="font-size:13px;color:var(--text2);padding:8px">Nenhuma peça encontrada</p>'; return; }
-  list.innerHTML = filtered.map(p => `
-    <div class="item-row" style="cursor:pointer" onclick="addToCart(state.produtos.find(x=>x.id==='${p.id}'));document.getElementById('search-vender').value='';renderVenderBusca()">
-      <div style="flex:1">
-        <div class="item-code">${p.ref}</div>
-        <div class="item-name">${p.desc}</div>
-      </div>
+function renderVenderBusca(){
+  const q=(document.getElementById('search-vender').value||'').toLowerCase();
+  const list=document.getElementById('vender-busca-list');
+  if(!q){list.innerHTML='';return;}
+  const f=S.produtos.filter(p=>!p.vendido&&(p.ref.toLowerCase().includes(q)||p.desc.toLowerCase().includes(q))).slice(0,8);
+  if(!f.length){list.innerHTML='<p style="font-size:13px;color:var(--text2);padding:8px">Nenhuma peça encontrada</p>';return;}
+  list.innerHTML=f.map(p=>`
+    <div class="item-row" style="cursor:pointer" onclick="addToCartById('${p.id}')">
+      <div style="flex:1"><div class="item-code">${p.ref}</div><div class="item-name">${p.desc}</div></div>
       <div class="item-price">${fmt(p.preco)}</div>
-    </div>
-  `).join('');
+    </div>`).join('');
+}
+function addToCartById(id){
+  const p=S.produtos.find(x=>x.id==id);
+  if(p){addToCart(p);document.getElementById('search-vender').value='';renderVenderBusca();}
 }
 
-// ============ PAGAMENTO ============
-function selectPay(el, method) {
-  document.querySelectorAll('.pay-opt').forEach(e => e.classList.remove('selected'));
-  el.classList.add('selected');
-  state.payMethod = method;
+// ============ PAGAMENTOS MÚLTIPLOS ============
+function togglePayOpt(el, metodo){
+  el.classList.toggle('selected');
+  if(el.classList.contains('selected')) S.paySelected[metodo]=0;
+  else delete S.paySelected[metodo];
+  updatePaySplit();
+}
+function updatePaySplit(){
+  const total=S.cart.reduce((a,c)=>a+c.preco,0);
+  const metodos=Object.keys(S.paySelected);
+  const rows=document.getElementById('pay-split-rows');
+  const check=document.getElementById('pay-total-check');
+  if(!metodos.length){rows.innerHTML='';check.textContent='';return;}
+  rows.innerHTML=metodos.map(m=>`
+    <div class="pay-split-row">
+      <span class="pay-split-label">${m}</span>
+      <input class="pay-split-val" type="number" min="0" step="0.01" value="${S.paySelected[m]||''}" placeholder="R$ 0,00"
+        oninput="S.paySelected['${m}']=parseFloat(this.value)||0;checkPayTotal()">
+    </div>`).join('');
+  checkPayTotal();
+}
+function checkPayTotal(){
+  const total=S.cart.reduce((a,c)=>a+c.preco,0);
+  const pago=Object.values(S.paySelected).reduce((a,v)=>a+v,0);
+  const check=document.getElementById('pay-total-check');
+  const diff=total-pago;
+  if(Math.abs(diff)<0.01){check.textContent='✅ Valores conferem';check.style.color='var(--success)';}
+  else if(pago>0){check.textContent=`Faltam ${fmt(Math.max(0,diff))} | Excesso ${fmt(Math.max(0,-diff))}`;check.style.color='var(--danger)';}
+  else check.textContent='';
 }
 
 // ============ FINALIZAR VENDA ============
-function finalizarVenda() {
-  if (!state.cart.length) { toast('Adicione pelo menos uma peça'); return; }
-  const clienteId = document.getElementById('select-cliente').value;
-  const cliente = state.clientes.find(c => c.id === clienteId);
-  const total = state.cart.reduce((a,c) => a + c.preco, 0);
-  const obs = document.getElementById('venda-obs').value;
+async function finalizarVenda(){
+  if(!S.cart.length){toast('Adicione pelo menos uma peça');return;}
+  const metodos=Object.keys(S.paySelected);
+  if(!metodos.length){toast('Selecione pelo menos uma forma de pagamento');return;}
+  const total=S.cart.reduce((a,c)=>a+c.preco,0);
+  const pago=Object.values(S.paySelected).reduce((a,v)=>a+v,0);
+  if(metodos.length>1&&Math.abs(total-pago)>0.01){toast('Distribua o valor total entre as formas de pagamento');return;}
+  // Se só 1 forma, preenche automaticamente com o total
+  if(metodos.length===1) S.paySelected[metodos[0]]=total;
 
-  const venda = {
-    id: Date.now().toString(),
-    data: new Date().toISOString(),
-    itens: [...state.cart],
-    total,
-    pagamento: state.payMethod,
-    cliente: cliente || null,
-    obs,
+  const clienteId=document.getElementById('select-cliente').value;
+  const cliente=S.clientes.find(c=>c.id===clienteId);
+  const obs=document.getElementById('venda-obs').value;
+  const pagStr=Object.entries(S.paySelected).map(([k,v])=>`${k}: R$${Number(v).toFixed(2)}`).join(' | ');
+  const venda={
+    id:Date.now().toString(), data:new Date().toISOString(),
+    itens:[...S.cart], total, pagamentos:{...S.paySelected},
+    pagamentoStr:pagStr, cliente:cliente||null, obs,
   };
-
-  // Marca como vendido
-  venda.itens.forEach(item => {
-    const p = state.produtos.find(x => x.id === item.id);
-    if (p) p.vendido = true;
+  // Marca vendido
+  venda.itens.forEach(item=>{
+    const p=S.produtos.find(x=>x.id===item.id);
+    if(p){p.vendido=true;p.dataVenda=new Date().toISOString();p.clienteVenda=cliente?cliente.nome:'';}
   });
+  S.vendas.push(venda);
+  S.cart=[]; S.paySelected={};
+  // Reset UI pagamentos
+  document.querySelectorAll('.pay-opt').forEach(e=>e.classList.remove('selected'));
+  save(); updateStats(); updateCartUI(); renderMaletaCard();
 
-  state.vendas.push(venda);
-  state.cart = [];
-  save();
-  updateAll();
-  updateCartUI();
-  populateClienteSelect();
+  // Push Sheets async
+  pushVendaSheets(venda, cliente);
 
-  // Modal confirmação
-  const det = document.getElementById('modal-venda-detalhes');
-  det.innerHTML = `
-    <div style="margin-bottom:12px">
-      ${cliente ? `<div style="font-size:15px;font-weight:600;margin-bottom:4px">${cliente.nome}</div>` : ''}
-      <div style="font-size:13px;color:var(--text2)">${new Date().toLocaleString('pt-BR')}</div>
+  // Modal
+  const det=document.getElementById('modal-venda-detalhes');
+  det.innerHTML=`
+    <div style="margin-bottom:10px">
+      ${cliente?`<div style="font-size:15px;font-weight:600">${cliente.nome}</div>`:''}
+      <div style="font-size:12px;color:var(--text2)">${new Date().toLocaleString('pt-BR')}</div>
     </div>
-    ${venda.itens.map(i => `
-      <div style="display:flex;justify-content:space-between;font-size:13px;padding:4px 0;border-bottom:0.5px solid var(--border)">
-        <span>${i.ref} — ${i.desc.substring(0,30)}...</span>
-        <span style="font-weight:600">${fmt(i.preco)}</span>
-      </div>
-    `).join('')}
-    <div style="display:flex;justify-content:space-between;margin-top:12px;font-size:17px;font-weight:700">
-      <span>Total</span><span style="color:var(--gold-dark)">${fmt(total)}</span>
-    </div>
-    <div style="margin-top:8px"><span class="tag tag-gold">${state.payMethod}</span></div>
-    ${obs ? `<div style="margin-top:8px;font-size:13px;color:var(--text2)">${obs}</div>` : ''}
-  `;
-
+    ${venda.itens.map(i=>`<div style="display:flex;justify-content:space-between;font-size:12px;padding:3px 0;border-bottom:0.5px solid var(--border)"><span>${i.ref} — ${i.desc.substring(0,28)}...</span><span style="font-weight:600">${fmt(i.preco)}</span></div>`).join('')}
+    <div style="display:flex;justify-content:space-between;margin-top:10px;font-size:17px;font-weight:700"><span>Total</span><span style="color:var(--gold-dark)">${fmt(total)}</span></div>
+    <div style="margin-top:6px;font-size:12px;color:var(--text2)">${pagStr}</div>
+    ${obs?`<div style="margin-top:6px;font-size:12px;color:var(--text2)">${obs}</div>`:''}
+    ${cliente&&cliente.email?`<a href="mailto:${cliente.email}?subject=Sua compra Fressen Joias&body=${encodeURIComponent('Olá '+cliente.nome+'! ✨\n\nSua compra foi registrada!\n\n'+venda.itens.map(i=>i.ref+' — '+i.desc+' — '+fmt(i.preco)).join('\n')+'\n\nTotal: '+fmt(total)+'\n'+pagStr+'\n\nObrigada por comprar comigo!\nFressen Joias')}" class="btn btn-dark" style="margin-top:10px;text-decoration:none;display:flex;justify-content:center;gap:6px;font-size:14px">📧 Enviar Comprovante</a>`:''}`;
   openModal('modal-confirmacao');
   toast('🎉 Venda registrada!');
-
-  // Email via Gmail (se integrado)
-  if (cliente && cliente.email) enviarEmailVenda(venda, cliente);
-}
-
-// ============ EMAIL (Gmail via Claude MCP — placeholder) ============
-function enviarEmailVenda(venda, cliente) {
-  // Integração real requereria Claude MCP Gmail API
-  // Por ora, abre mailto: como fallback confiável em mobile
-  const itens = venda.itens.map(i => `• ${i.ref} — ${i.desc} — ${fmt(i.preco)}`).join('\n');
-  const body = `Olá ${cliente.nome}! 💛\n\nSua compra foi registrada com sucesso!\n\n${itens}\n\nTotal: ${fmt(venda.total)}\nPagamento: ${venda.pagamento}\n\nObrigada por comprar comigo! ✨\nFressen Joias`;
-  const mailtoLink = `mailto:${cliente.email}?subject=Sua compra Fressen Joias&body=${encodeURIComponent(body)}`;
-  // Não abre automaticamente — consultora pode tocar no botão
-  document.getElementById('modal-venda-detalhes').insertAdjacentHTML('beforeend', `
-    <a href="${mailtoLink}" class="btn btn-dark" style="margin-top:12px;text-decoration:none;display:flex;justify-content:center;gap:8px">
-      📧 Enviar Comprovante por Email
-    </a>
-  `);
 }
 
 // ============ CLIENTES ============
-function openModalCliente() { openModal('modal-cliente'); }
-
-function salvarCliente() {
-  const nome = document.getElementById('cli-nome').value.trim();
-  const tel = document.getElementById('cli-tel').value.trim();
-  if (!nome || !tel) { toast('Nome e telefone são obrigatórios'); return; }
-  const cliente = {
-    id: Date.now().toString(),
-    nome,
-    tel,
-    email: document.getElementById('cli-email').value.trim(),
-    cpf: document.getElementById('cli-cpf').value.trim(),
-  };
-  state.clientes.push(cliente);
-  save();
+async function salvarCliente(){
+  const nome=document.getElementById('cli-nome').value.trim();
+  const tel=document.getElementById('cli-tel').value.trim();
+  if(!nome||!tel){toast('Nome e telefone são obrigatórios');return;}
+  const c={id:Date.now().toString(),nome,tel,email:document.getElementById('cli-email').value.trim(),nasc:document.getElementById('cli-nasc').value};
+  S.clientes.push(c); save();
   closeModal('modal-cliente');
-  ['cli-nome','cli-tel','cli-email','cli-cpf'].forEach(id => document.getElementById(id).value = '');
-  renderClientes();
-  populateClienteSelect();
+  ['cli-nome','cli-tel','cli-email','cli-nasc'].forEach(id=>document.getElementById(id).value='');
+  renderClientes(); populateClienteSelect();
+  pushClienteSheets(c);
   toast(`✅ ${nome} cadastrado!`);
 }
 
-function renderClientes() {
-  const q = (document.getElementById('search-clientes').value || '').toLowerCase();
-  const list = document.getElementById('clientes-list');
-  const filtered = state.clientes.filter(c => !q || c.nome.toLowerCase().includes(q) || c.tel.includes(q));
-  if (!filtered.length) {
-    list.innerHTML = '<div class="empty"><div class="empty-icon">👤</div><p>Nenhum cliente cadastrado<br><small>Toque + para adicionar</small></p></div>';
-    return;
-  }
-  list.innerHTML = filtered.map(c => {
-    const iniciais = c.nome.split(' ').map(x=>x[0]).slice(0,2).join('').toUpperCase();
-    const vendas = state.vendas.filter(v => v.cliente && v.cliente.id === c.id);
-    const totalCompras = vendas.reduce((a,v) => a + v.total, 0);
-    return `
-      <div class="cliente-card">
-        <div class="cliente-avatar">${iniciais}</div>
-        <div class="cliente-info">
-          <div class="cliente-name">${c.nome}</div>
-          <div class="cliente-phone">${c.tel} ${c.email ? '· ' + c.email : ''}</div>
-          ${totalCompras > 0 ? `<div style="font-size:11px;color:var(--gold-dark);font-weight:600;margin-top:2px">${vendas.length} compra(s) · ${fmt(totalCompras)}</div>` : ''}
-        </div>
+function renderClientes(){
+  const q=(document.getElementById('search-clientes').value||'').toLowerCase();
+  const list=document.getElementById('clientes-list');
+  const f=S.clientes.filter(c=>!q||c.nome.toLowerCase().includes(q)||c.tel.includes(q));
+  if(!f.length){list.innerHTML='<div class="empty"><div class="empty-icon">👤</div><p>Nenhum cliente cadastrado<br><small>Toque + para adicionar</small></p></div>';return;}
+  list.innerHTML=f.map(c=>{
+    const ini=c.nome.split(' ').map(x=>x[0]).slice(0,2).join('').toUpperCase();
+    const vc=S.vendas.filter(v=>v.cliente&&v.cliente.id===c.id);
+    const tc=vc.reduce((a,v)=>a+v.total,0);
+    return `<div class="cliente-card" onclick="openClienteDetalhe('${c.id}')">
+      <div class="cliente-avatar">${ini}</div>
+      <div style="flex:1">
+        <div style="font-size:14px;font-weight:600">${c.nome}</div>
+        <div style="font-size:12px;color:var(--text2)">${c.tel}${c.email?' · '+c.email:''}</div>
+        ${c.nasc?`<div style="font-size:11px;color:var(--text2)">Nasc: ${c.nasc}</div>`:''}
+        ${tc>0?`<div style="font-size:11px;color:var(--gold-dark);font-weight:600">${vc.length} compra(s) · ${fmt(tc)}</div>`:''}
       </div>
-    `;
+    </div>`;
   }).join('');
 }
 
-function populateClienteSelect() {
-  const sel = document.getElementById('select-cliente');
-  const val = sel.value;
-  sel.innerHTML = '<option value="">Selecionar cliente...</option>' +
-    state.clientes.map(c => `<option value="${c.id}">${c.nome} — ${c.tel}</option>`).join('');
-  if (val) sel.value = val;
+function openClienteDetalhe(id){
+  S.currentModalCliente=S.clientes.find(c=>c.id===id);
+  if(!S.currentModalCliente)return;
+  const c=S.currentModalCliente;
+  const vc=S.vendas.filter(v=>v.cliente&&v.cliente.id===c.id);
+  const tc=vc.reduce((a,v)=>a+v.total,0);
+  document.getElementById('modal-cliente-detalhe-content').innerHTML=`
+    <div class="modal-title">${c.nome}</div>
+    <div class="cond-item" style="margin-bottom:10px"><div class="cond-label">Telefone</div><div class="cond-val">${c.tel}</div></div>
+    ${c.email?`<div class="cond-item" style="margin-bottom:10px"><div class="cond-label">Email</div><div class="cond-val">${c.email}</div></div>`:''}
+    ${c.nasc?`<div class="cond-item" style="margin-bottom:10px"><div class="cond-label">Nascimento</div><div class="cond-val">${c.nasc}</div></div>`:''}
+    <div class="cond-item" style="margin-bottom:14px"><div class="cond-label">Total de Compras</div><div class="cond-val" style="color:var(--gold-dark)">${fmt(tc)} em ${vc.length} venda(s)</div></div>`;
+  openModal('modal-cliente-detalhe');
 }
 
-// ============ MODAL ITEM ============
-function openItemModal(id) {
-  const prod = state.produtos.find(p => p.id == id);
-  if (!prod) return;
-  state.currentModalItem = prod;
-  document.getElementById('modal-item-content').innerHTML = `
-    <div class="modal-title">${prod.ref}</div>
-    <p style="font-size:15px;margin-bottom:12px;color:var(--text)">${prod.desc}</p>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px">
-      <div class="stat-card"><div class="stat-label">Preço</div><div class="stat-val gold">${fmt(prod.preco)}</div></div>
-      <div class="stat-card"><div class="stat-label">Grupo</div><div class="stat-val" style="font-size:14px">${prod.grupo}</div></div>
+async function excluirClienteModal(){
+  if(!S.currentModalCliente)return;
+  const id=S.currentModalCliente.id;
+  S.clientes=S.clientes.filter(c=>c.id!==id);
+  save(); renderClientes(); populateClienteSelect();
+  deleteClienteSheets(id);
+  closeModal('modal-cliente-detalhe');
+  toast('Cliente excluído');
+}
+
+function populateClienteSelect(){
+  const sel=document.getElementById('select-cliente');
+  const v=sel.value;
+  sel.innerHTML='<option value="">Selecionar cliente...</option>'+S.clientes.map(c=>`<option value="${c.id}">${c.nome} — ${c.tel}</option>`).join('');
+  if(v)sel.value=v;
+}
+
+// ============ ITEM MODAL ============
+function openItemModal(id){
+  const p=S.produtos.find(x=>x.id==id);
+  if(!p)return; S.currentModalItem=p;
+  document.getElementById('modal-item-content').innerHTML=`
+    <div class="modal-title">${p.ref}</div>
+    <p style="font-size:14px;margin-bottom:10px">${p.desc}</p>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px">
+      <div class="stat-card"><div class="stat-label">Preço</div><div class="stat-val gold">${fmt(p.preco)}</div></div>
+      <div class="stat-card"><div class="stat-label">Grupo</div><div class="stat-val" style="font-size:13px">${p.grupo}</div></div>
     </div>
-    ${prod.barcode ? `<p style="font-size:12px;color:var(--text2);margin-bottom:8px">Código: ${prod.barcode}</p>` : ''}
-    ${prod.vendido ? '<div class="tag tag-danger" style="margin-bottom:12px">Esta peça foi vendida</div>' : ''}
-  `;
+    ${p.barcode?`<p style="font-size:11px;color:var(--text2);margin-bottom:8px">Cód: ${p.barcode}</p>`:''}
+    ${p.vendido?'<div class="tag tag-danger" style="margin-bottom:10px">Peça já vendida</div>':''}`;
   openModal('modal-item');
 }
-
-function addToCartFromModal() {
-  if (!state.currentModalItem) return;
-  if (state.currentModalItem.vendido) { toast('Peça já vendida'); return; }
-  addToCart(state.currentModalItem);
-  closeModal('modal-item');
-  showPage('vender');
+function addToCartFromModal(){
+  if(!S.currentModalItem)return;
+  if(S.currentModalItem.vendido){toast('Peça já vendida');return;}
+  addToCart(S.currentModalItem); closeModal('modal-item'); showPage('vender');
 }
 
 // ============ RELATÓRIO ============
-function updateRelatorio() {
-  const total = state.produtos.length;
-  const vendidos = state.produtos.filter(p => p.vendido);
-  const disponiveis = state.produtos.filter(p => !p.vendido);
-  const valorInicial = state.produtos.reduce((a,p) => a + p.preco, 0);
-  const valorVendido = state.vendas.reduce((a,v) => a + v.total, 0);
-  const valorEstoque = disponiveis.reduce((a,p) => a + p.preco, 0);
-  const pct = total > 0 ? Math.round((vendidos.length / total) * 100) : 0;
-
-  document.getElementById('rel-inicial').textContent = fmt(valorInicial);
-  document.getElementById('rel-vendido').textContent = fmt(valorVendido);
-  document.getElementById('rel-estoque-qtd').textContent = disponiveis.length;
-  document.getElementById('rel-projecao').textContent = fmt(valorEstoque);
-  document.getElementById('rel-pct').textContent = pct + '%';
-  document.getElementById('rel-bar').style.width = pct + '%';
-  document.getElementById('rel-desc').textContent = `${vendidos.length} de ${total} peças vendidas`;
+function updateRelatorio(){
+  const total=S.produtos.length;
+  const vendidos=S.produtos.filter(p=>p.vendido);
+  const disp=S.produtos.filter(p=>!p.vendido);
+  const vi=S.produtos.reduce((a,p)=>a+p.preco,0);
+  const vv=S.vendas.reduce((a,v)=>a+v.total,0);
+  const ve=disp.reduce((a,p)=>a+p.preco,0);
+  const pct=total>0?Math.round(vendidos.length/total*100):0;
+  document.getElementById('rel-inicial').textContent=fmt(vi);
+  document.getElementById('rel-vendido').textContent=fmt(vv);
+  document.getElementById('rel-disp-qtd').textContent=disp.length;
+  document.getElementById('rel-projecao').textContent=fmt(ve);
+  document.getElementById('rel-pct').textContent=pct+'%';
+  document.getElementById('rel-bar').style.width=pct+'%';
+  document.getElementById('rel-desc').textContent=`${vendidos.length} de ${total} peças vendidas`;
 
   // Por categoria
-  const grupos = {};
-  state.produtos.forEach(p => {
-    if (!grupos[p.grupo]) grupos[p.grupo] = {total:0, vendidos:0, valor:0};
-    grupos[p.grupo].total++;
-    if (p.vendido) { grupos[p.grupo].vendidos++; grupos[p.grupo].valor += p.preco; }
-  });
-  document.getElementById('rel-categorias').innerHTML = Object.entries(grupos).map(([g, d]) => `
-    <div style="margin-bottom:10px">
-      <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:2px">
+  const grupos={};
+  S.produtos.forEach(p=>{if(!grupos[p.grupo])grupos[p.grupo]={t:0,v:0,val:0};grupos[p.grupo].t++;if(p.vendido){grupos[p.grupo].v++;grupos[p.grupo].val+=p.preco;}});
+  document.getElementById('rel-categorias').innerHTML=Object.entries(grupos).map(([g,d])=>`
+    <div style="margin-bottom:8px">
+      <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:2px">
         <span style="font-weight:600">${g}</span>
-        <span style="color:var(--text2)">${d.vendidos}/${d.total} · ${fmt(d.valor)}</span>
+        <span style="color:var(--text2)">${d.v}/${d.t} · ${fmt(d.val)}</span>
       </div>
-      <div class="report-bar"><div class="report-fill" style="width:${d.total > 0 ? Math.round(d.vendidos/d.total*100) : 0}%"></div></div>
-    </div>
-  `).join('');
+      <div class="report-bar"><div class="report-fill" style="width:${d.t>0?Math.round(d.v/d.t*100):0}%"></div></div>
+    </div>`).join('');
+
+  // Por forma de pagamento
+  const pags={};
+  S.vendas.forEach(v=>Object.entries(v.pagamentos||{}).forEach(([m,val])=>{if(!pags[m])pags[m]=0;pags[m]+=val;}));
+  document.getElementById('rel-pagamentos').innerHTML=Object.entries(pags).length?Object.entries(pags).map(([m,v])=>`
+    <div style="display:flex;justify-content:space-between;padding:5px 0;border-bottom:0.5px solid var(--border);font-size:13px">
+      <span>${m}</span><span style="font-weight:700;color:var(--gold-dark)">${fmt(v)}</span>
+    </div>`).join(''):'<p style="font-size:13px;color:var(--text2)">Nenhuma venda registrada</p>';
 
   // Últimas vendas
-  const ultimas = [...state.vendas].reverse().slice(0, 5);
-  document.getElementById('rel-vendas-list').innerHTML = ultimas.length ? ultimas.map(v => `
+  const ult=[...S.vendas].reverse().slice(0,5);
+  document.getElementById('rel-vendas-list').innerHTML=ult.length?ult.map(v=>`
     <div class="sale-row">
       <div>
-        <div style="font-size:14px;font-weight:600">${v.cliente ? v.cliente.nome : 'Sem cliente'}</div>
-        <div style="font-size:12px;color:var(--text2)">${new Date(v.data).toLocaleString('pt-BR')} · ${v.pagamento}</div>
-        <div style="font-size:12px;color:var(--text2)">${v.itens.length} peça(s)</div>
+        <div style="font-size:13px;font-weight:600">${v.cliente?v.cliente.nome:'Sem cliente'}</div>
+        <div style="font-size:11px;color:var(--text2)">${new Date(v.data).toLocaleString('pt-BR')}</div>
+        <div style="font-size:11px;color:var(--text2)">${v.itens.length} peça(s) · ${v.pagamentoStr||''}</div>
       </div>
       <div style="font-weight:700;color:var(--gold-dark)">${fmt(v.total)}</div>
-    </div>
-  `).join('') : '<div class="empty"><div class="empty-icon">📊</div><p>Nenhuma venda registrada</p></div>';
+    </div>`).join(''):'<div class="empty"><div class="empty-icon">📊</div><p>Nenhuma venda ainda</p></div>';
 }
 
-// ============ EXPORT CSV ============
-function exportCSV() {
-  const rows = [['Referência','Descrição','Grupo','Preço','Status','Cliente','Data Venda','Pagamento']];
-  state.produtos.forEach(p => {
-    const venda = state.vendas.find(v => v.itens.find(i => i.id === p.id));
-    rows.push([
-      p.ref, p.desc, p.grupo, p.preco,
-      p.vendido ? 'Vendido' : 'Disponível',
-      venda && venda.cliente ? venda.cliente.nome : '',
-      venda ? new Date(venda.data).toLocaleString('pt-BR') : '',
-      venda ? venda.pagamento : '',
-    ]);
+// ============ EXPORT ============
+function exportCSV(){
+  const rows=[['Ref','Grupo','Descrição','Preço','Status','Maleta','Cliente','Data Venda','Pagamento']];
+  S.produtos.forEach(p=>{
+    const v=S.vendas.find(x=>x.itens.find(i=>i.id===p.id));
+    rows.push([p.ref,p.grupo,p.desc,p.preco,p.vendido?'Vendido':'Disponível',S.maleta.numero||'',v&&v.cliente?v.cliente.nome:'',v?new Date(v.data).toLocaleString('pt-BR'):'',v?v.pagamentoStr:'']);
   });
-  const csv = rows.map(r => r.map(c => `"${c}"`).join(',')).join('\n');
-  const blob = new Blob([csv], {type:'text/csv;charset=utf-8;'});
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url; a.download = 'fressen_relatorio.csv'; a.click();
-  toast('CSV exportado!');
+  const csv=rows.map(r=>r.map(c=>`"${c}"`).join(',')).join('\n');
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8;'}));
+  a.download='fressen_relatorio.csv'; a.click(); toast('CSV exportado!');
 }
-
-function compartilharRelatorio() {
-  const vendidos = state.produtos.filter(p => p.vendido);
-  const total = state.vendas.reduce((a,v) => a + v.total, 0);
-  const texto = `📊 Relatório Fressen Joias\n\nVendas: ${fmt(total)}\nPeças vendidas: ${vendidos.length}\nEstoque restante: ${state.produtos.filter(p=>!p.vendido).length} peças\n\nGerado em: ${new Date().toLocaleString('pt-BR')}`;
-  if (navigator.share) {
-    navigator.share({ title: 'Relatório Fressen', text: texto });
-  } else {
-    navigator.clipboard.writeText(texto).then(() => toast('Relatório copiado!'));
-  }
+function compartilharRelatorio(){
+  const vend=S.produtos.filter(p=>p.vendido);
+  const txt=`📊 Fressen Joias — Maleta ${S.maleta.numero||'—'}\nConsultora: ${S.maleta.consultora||'—'}\n\nVendas: ${fmt(S.vendas.reduce((a,v)=>a+v.total,0))}\nPeças vendidas: ${vend.length}/${S.produtos.length}\nEstoque restante: ${S.produtos.filter(p=>!p.vendido).length} peças\n\n${new Date().toLocaleString('pt-BR')}`;
+  if(navigator.share)navigator.share({title:'Relatório Fressen',text:txt});
+  else navigator.clipboard.writeText(txt).then(()=>toast('Copiado!'));
 }
 
 // ============ CONFIG ============
-function toggleConfig() {
-  const s = document.getElementById('config-section');
-  s.style.display = s.style.display === 'none' || !s.style.display ? 'block' : 'none';
-  if (s.style.display === 'block') document.getElementById('cfg-email-consultora').value = state.configEmailConsultora;
+function toggleConfig(){
+  const c=document.getElementById('cfg-card');
+  c.style.display=c.style.display==='none'||!c.style.display?'block':'none';
+  if(c.style.display==='block'){
+    document.getElementById('cfg-api-url').value=S.apiUrl||'';
+    document.getElementById('cfg-maleta').value=S.maleta.numero||'';
+    document.getElementById('cfg-consultora').value=S.maleta.consultora||'';
+    document.getElementById('cfg-ciclo').value=S.maleta.ciclo||'';
+    document.getElementById('cfg-data-inicio').value=S.maleta.dataInicio||'';
+    document.getElementById('cfg-data-acerto').value=S.maleta.dataAcerto||'';
+  }
 }
-function saveConfig() {
-  state.configEmailConsultora = document.getElementById('cfg-email-consultora').value;
-  save();
-  toast('Configurações salvas!');
-  toggleConfig();
+function saveConfig(){
+  S.apiUrl=document.getElementById('cfg-api-url').value.trim();
+  S.maleta={
+    numero:document.getElementById('cfg-maleta').value.trim(),
+    consultora:document.getElementById('cfg-consultora').value.trim(),
+    ciclo:document.getElementById('cfg-ciclo').value.trim(),
+    dataInicio:document.getElementById('cfg-data-inicio').value,
+    dataAcerto:document.getElementById('cfg-data-acerto').value,
+  };
+  save(); renderMaletaCard(); toggleConfig(); toast('✅ Configurações salvas!');
 }
 
 // ============ MODAL HELPERS ============
-function openModal(id) { document.getElementById(id).classList.add('open'); }
-function closeModal(id) { document.getElementById(id).classList.remove('open'); }
-document.querySelectorAll('.modal-bg').forEach(m => {
-  m.addEventListener('click', e => { if (e.target === m) m.classList.remove('open'); });
-});
+function openModal(id){document.getElementById(id).classList.add('open');}
+function closeModal(id){document.getElementById(id).classList.remove('open');}
+document.querySelectorAll('.modal-bg').forEach(m=>m.addEventListener('click',e=>{if(e.target===m)m.classList.remove('open');}));
 
 // ============ TOAST ============
-function toast(msg) {
-  const t = document.createElement('div');
-  t.className = 'toast';
-  t.textContent = msg;
-  document.body.appendChild(t);
-  setTimeout(() => t.remove(), 2500);
+function toast(msg){
+  const t=document.createElement('div');t.className='toast';t.textContent=msg;
+  document.body.appendChild(t);setTimeout(()=>t.remove(),2500);
 }
 
-// ============ RENDER INICIAL ============
-renderEstoque();
-renderClientes();
-populateClienteSelect();
+// INIT renders
+renderEstoque();renderClientes();populateClienteSelect();
 </script>
 </body>
 </html>
