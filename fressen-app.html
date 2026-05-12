@@ -1,0 +1,1284 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Fressen Joias — Consultora</title>
+<script src="https://unpkg.com/quagga@0.12.1/dist/quagga.min.js"></script>
+<style>
+  :root {
+    --gold: #C9A84C;
+    --gold-light: #F0D080;
+    --gold-dark: #8B6914;
+    --black: #1A1A1A;
+    --surface: #FAFAF8;
+    --surface2: #F2F0EB;
+    --border: rgba(0,0,0,0.1);
+    --text: #1A1A1A;
+    --text2: #6B6558;
+    --danger: #C0392B;
+    --success: #1E7E34;
+    --radius: 14px;
+    --radius-sm: 8px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+  body {
+    font-family: -apple-system, 'SF Pro Text', Helvetica, sans-serif;
+    background: var(--surface);
+    color: var(--text);
+    min-height: 100vh;
+    max-width: 430px;
+    margin: 0 auto;
+    overflow-x: hidden;
+  }
+  /* HEADER */
+  .header {
+    background: var(--black);
+    padding: 16px 20px 12px;
+    position: sticky; top: 0; z-index: 100;
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .header-logo { color: var(--gold); font-size: 18px; font-weight: 600; letter-spacing: 2px; }
+  .header-sub { color: rgba(201,168,76,0.6); font-size: 11px; letter-spacing: 1px; }
+  .header-badge {
+    background: var(--gold); color: var(--black);
+    font-size: 11px; font-weight: 700;
+    padding: 4px 10px; border-radius: 20px;
+  }
+
+  /* NAV */
+  .nav {
+    background: var(--black);
+    display: flex; border-top: 1px solid rgba(201,168,76,0.2);
+    position: sticky; top: 56px; z-index: 99;
+  }
+  .nav-btn {
+    flex: 1; padding: 10px 4px; background: none; border: none;
+    color: rgba(201,168,76,0.5); font-size: 9px; font-weight: 600;
+    letter-spacing: 0.5px; text-transform: uppercase;
+    display: flex; flex-direction: column; align-items: center; gap: 3px;
+    cursor: pointer; transition: color 0.2s;
+  }
+  .nav-btn.active { color: var(--gold); }
+  .nav-btn svg { width: 18px; height: 18px; }
+
+  /* PAGES */
+  .page { display: none; padding: 16px; min-height: calc(100vh - 110px); }
+  .page.active { display: block; }
+
+  /* CARDS */
+  .card {
+    background: #fff; border: 0.5px solid var(--border);
+    border-radius: var(--radius); padding: 16px; margin-bottom: 12px;
+  }
+  .card-title { font-size: 13px; font-weight: 600; color: var(--text2); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 12px; }
+
+  /* BUTTONS */
+  .btn {
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+    padding: 14px 20px; border-radius: var(--radius); border: none;
+    font-size: 15px; font-weight: 600; cursor: pointer; width: 100%;
+    transition: opacity 0.15s, transform 0.1s;
+  }
+  .btn:active { opacity: 0.8; transform: scale(0.98); }
+  .btn-gold { background: var(--gold); color: var(--black); }
+  .btn-dark { background: var(--black); color: var(--gold); }
+  .btn-outline { background: none; border: 1.5px solid var(--gold); color: var(--gold-dark); }
+  .btn-danger { background: var(--danger); color: #fff; }
+  .btn-success { background: var(--success); color: #fff; }
+  .btn-sm { padding: 8px 14px; font-size: 13px; border-radius: var(--radius-sm); width: auto; }
+
+  /* INPUTS */
+  input, select, textarea {
+    width: 100%; padding: 12px 14px; border: 1px solid var(--border);
+    border-radius: var(--radius-sm); font-size: 15px; background: var(--surface);
+    color: var(--text); outline: none; transition: border 0.2s;
+    -webkit-appearance: none;
+  }
+  input:focus, select:focus { border-color: var(--gold); background: #fff; }
+  label { font-size: 12px; font-weight: 600; color: var(--text2); margin-bottom: 4px; display: block; text-transform: uppercase; letter-spacing: 0.4px; }
+  .field { margin-bottom: 12px; }
+
+  /* STATS ROW */
+  .stats-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 12px; }
+  .stat-card { background: var(--surface2); border-radius: var(--radius-sm); padding: 12px; }
+  .stat-label { font-size: 11px; color: var(--text2); font-weight: 600; letter-spacing: 0.4px; text-transform: uppercase; }
+  .stat-val { font-size: 22px; font-weight: 700; color: var(--black); margin-top: 2px; }
+  .stat-val.gold { color: var(--gold-dark); }
+
+  /* STOCK ITEM */
+  .item-row {
+    display: flex; align-items: center; gap: 10px;
+    padding: 10px 0; border-bottom: 0.5px solid var(--border);
+  }
+  .item-row:last-child { border-bottom: none; }
+  .item-code { font-size: 11px; color: var(--text2); font-family: monospace; }
+  .item-name { font-size: 13px; font-weight: 500; flex: 1; line-height: 1.3; }
+  .item-price { font-size: 14px; font-weight: 700; color: var(--gold-dark); white-space: nowrap; }
+  .item-status { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+  .status-ok { background: var(--success); }
+  .status-sold { background: var(--danger); }
+
+  /* SCAN AREA */
+  #scanner-container {
+    width: 100%; height: 220px; background: #000; border-radius: var(--radius);
+    overflow: hidden; position: relative; display: none;
+  }
+  #scanner-container video { width: 100%; height: 100%; object-fit: cover; }
+  #scanner-container canvas { display: none; }
+  .scan-overlay {
+    position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; pointer-events: none;
+  }
+  .scan-line {
+    width: 70%; height: 2px; background: var(--gold); box-shadow: 0 0 8px var(--gold);
+    animation: scanPulse 1.5s ease-in-out infinite;
+  }
+  @keyframes scanPulse { 0%,100%{opacity:1} 50%{opacity:0.3} }
+  .scan-frame {
+    position: absolute; inset: 20px; border: 2px solid rgba(201,168,76,0.4); border-radius: 8px;
+  }
+
+  /* TOAST */
+  .toast {
+    position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%);
+    background: var(--black); color: var(--gold); padding: 10px 20px;
+    border-radius: 24px; font-size: 13px; font-weight: 600;
+    z-index: 9999; white-space: nowrap;
+    animation: toastIn 0.3s ease; box-shadow: 0 4px 16px rgba(0,0,0,0.3);
+  }
+  @keyframes toastIn { from{opacity:0;transform:translateX(-50%) translateY(10px)} }
+
+  /* MODAL */
+  .modal-bg {
+    position: fixed; inset: 0; background: rgba(0,0,0,0.6);
+    z-index: 200; display: flex; align-items: flex-end; justify-content: center;
+    display: none;
+  }
+  .modal-bg.open { display: flex; }
+  .modal {
+    background: #fff; border-radius: var(--radius) var(--radius) 0 0;
+    padding: 20px; width: 100%; max-height: 90vh; overflow-y: auto;
+    animation: slideUp 0.3s ease;
+  }
+  @keyframes slideUp { from{transform:translateY(100%)} }
+  .modal-handle { width: 36px; height: 4px; background: var(--border); border-radius: 2px; margin: 0 auto 16px; }
+  .modal-title { font-size: 17px; font-weight: 700; margin-bottom: 16px; }
+
+  /* TAG */
+  .tag {
+    display: inline-block; padding: 3px 8px; border-radius: 20px;
+    font-size: 11px; font-weight: 700; text-transform: uppercase;
+  }
+  .tag-gold { background: rgba(201,168,76,0.15); color: var(--gold-dark); }
+  .tag-success { background: rgba(30,126,52,0.12); color: var(--success); }
+  .tag-danger { background: rgba(192,57,43,0.12); color: var(--danger); }
+
+  /* SALE ROW */
+  .sale-row {
+    padding: 12px 0; border-bottom: 0.5px solid var(--border);
+    display: flex; justify-content: space-between; align-items: flex-start;
+  }
+  .sale-row:last-child { border-bottom: none; }
+
+  /* SEARCH */
+  .search-wrap { position: relative; margin-bottom: 12px; }
+  .search-wrap input { padding-left: 36px; }
+  .search-icon { position: absolute; left: 10px; top: 50%; transform: translateY(-50%); color: var(--text2); font-size: 16px; }
+
+  /* SECTION */
+  .section-title {
+    font-size: 11px; font-weight: 700; color: var(--text2);
+    text-transform: uppercase; letter-spacing: 1px;
+    padding: 8px 0 6px; margin-top: 4px;
+  }
+
+  /* PAYMENT OPTS */
+  .pay-opts { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 8px; }
+  .pay-opt {
+    padding: 10px 8px; border: 1.5px solid var(--border); border-radius: var(--radius-sm);
+    text-align: center; font-size: 13px; font-weight: 600; cursor: pointer;
+    transition: all 0.15s; color: var(--text2); background: var(--surface);
+  }
+  .pay-opt.selected { border-color: var(--gold); background: rgba(201,168,76,0.1); color: var(--gold-dark); }
+
+  /* CART BADGE */
+  .cart-badge {
+    position: absolute; top: -3px; right: -3px;
+    background: var(--danger); color: #fff; font-size: 9px; font-weight: 700;
+    width: 14px; height: 14px; border-radius: 50%; display: flex; align-items: center; justify-content: center;
+  }
+  .nav-btn-wrap { position: relative; display: flex; flex-direction: column; align-items: center; gap: 3px; }
+
+  /* REPORT */
+  .report-bar { height: 8px; background: var(--surface2); border-radius: 4px; overflow: hidden; margin-top: 6px; }
+  .report-fill { height: 100%; background: var(--gold); border-radius: 4px; transition: width 0.6s ease; }
+
+  .divider { height: 0.5px; background: var(--border); margin: 12px 0; }
+
+  /* EMPTY STATE */
+  .empty { text-align: center; padding: 40px 20px; color: var(--text2); }
+  .empty-icon { font-size: 40px; margin-bottom: 8px; }
+  .empty p { font-size: 14px; }
+
+  /* CLIENTE CARD */
+  .cliente-card {
+    display: flex; align-items: center; gap: 10px;
+    padding: 10px 0; border-bottom: 0.5px solid var(--border); cursor: pointer;
+  }
+  .cliente-avatar {
+    width: 36px; height: 36px; border-radius: 50%; background: rgba(201,168,76,0.15);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 14px; font-weight: 700; color: var(--gold-dark); flex-shrink: 0;
+  }
+  .cliente-info { flex: 1; }
+  .cliente-name { font-size: 14px; font-weight: 600; }
+  .cliente-phone { font-size: 12px; color: var(--text2); }
+
+  .floating-btn {
+    position: fixed; bottom: 20px; right: 20px;
+    width: 52px; height: 52px; border-radius: 50%;
+    background: var(--gold); color: var(--black); border: none;
+    font-size: 24px; font-weight: 300; cursor: pointer;
+    box-shadow: 0 4px 14px rgba(201,168,76,0.4);
+    display: flex; align-items: center; justify-content: center;
+    z-index: 50;
+  }
+
+  #config-section { display: none; }
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<div class="header">
+  <div>
+    <div class="header-logo">FRESSEN</div>
+    <div class="header-sub">JOIAS</div>
+  </div>
+  <div id="header-info" class="header-badge">Carregando...</div>
+</div>
+
+<!-- NAV -->
+<nav class="nav">
+  <button class="nav-btn active" onclick="showPage('home')" id="nav-home">
+    <div class="nav-btn-wrap">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+      Início
+    </div>
+  </button>
+  <button class="nav-btn" onclick="showPage('estoque')" id="nav-estoque">
+    <div class="nav-btn-wrap">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>
+      Estoque
+    </div>
+  </button>
+  <button class="nav-btn" onclick="showPage('vender')" id="nav-vender">
+    <div class="nav-btn-wrap" style="position:relative">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
+      <span id="cart-badge" class="cart-badge" style="display:none">0</span>
+      Vender
+    </div>
+  </button>
+  <button class="nav-btn" onclick="showPage('clientes')" id="nav-clientes">
+    <div class="nav-btn-wrap">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+      Clientes
+    </div>
+  </button>
+  <button class="nav-btn" onclick="showPage('relatorio')" id="nav-relatorio">
+    <div class="nav-btn-wrap">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+      Relatório
+    </div>
+  </button>
+</nav>
+
+<!-- =================== HOME =================== -->
+<div class="page active" id="page-home">
+  <div class="section-title">Resumo do dia</div>
+  <div class="stats-row">
+    <div class="stat-card">
+      <div class="stat-label">Vendas Hoje</div>
+      <div class="stat-val gold" id="stat-vendas-hoje">R$ 0</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Itens Vendidos</div>
+      <div class="stat-val" id="stat-itens-vendidos">0</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Em Estoque</div>
+      <div class="stat-val" id="stat-estoque">0</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Valor Estoque</div>
+      <div class="stat-val gold" id="stat-valor-estoque">R$ 0</div>
+    </div>
+  </div>
+
+  <div class="card" style="margin-bottom:12px">
+    <div class="card-title">Ação rápida</div>
+    <button class="btn btn-gold" style="margin-bottom:8px" onclick="showPage('vender')">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12l7-7 7 7"/></svg>
+      Nova Venda
+    </button>
+    <button class="btn btn-outline" onclick="showPage('estoque')">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/></svg>
+      Ver Estoque
+    </button>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Importar Condicional (PDF)</div>
+    <p style="font-size:13px;color:var(--text2);margin-bottom:12px">Importe o espelho condicional para carregar os produtos automaticamente.</p>
+    <label for="pdf-upload" class="btn btn-dark" style="cursor:pointer;display:flex;justify-content:center;gap:8px;padding:14px 20px;border-radius:14px;font-size:15px;font-weight:600">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+      Importar PDF
+    </label>
+    <input type="file" id="pdf-upload" accept="application/pdf" style="display:none" onchange="importPDF(this)">
+    <div id="import-status" style="margin-top:10px;font-size:13px;color:var(--text2);text-align:center"></div>
+  </div>
+
+  <div id="config-section" class="card">
+    <div class="card-title">Configurações (Gmail)</div>
+    <div class="field">
+      <label>Seu Email (consultora)</label>
+      <input type="email" id="cfg-email-consultora" placeholder="seuemail@gmail.com">
+    </div>
+    <button class="btn btn-dark" onclick="saveConfig()">Salvar</button>
+  </div>
+  <p style="text-align:center;font-size:12px;color:var(--text2);margin-top:8px;cursor:pointer" onclick="toggleConfig()">⚙️ Configurações</p>
+</div>
+
+<!-- =================== ESTOQUE =================== -->
+<div class="page" id="page-estoque">
+  <div class="section-title">Controle de Estoque</div>
+
+  <div class="card" style="margin-bottom:12px">
+    <div style="display:flex;gap:8px;align-items:center;margin-bottom:8px">
+      <div class="tag tag-success" id="tag-disponiveis">0 disponíveis</div>
+      <div class="tag tag-danger" id="tag-vendidos">0 vendidos</div>
+    </div>
+    <div class="search-wrap">
+      <span class="search-icon">🔍</span>
+      <input type="text" id="search-estoque" placeholder="Buscar por referência ou nome..." oninput="renderEstoque()">
+    </div>
+    <div style="display:flex;gap:8px">
+      <select id="filter-grupo" onchange="renderEstoque()" style="flex:1;font-size:13px;padding:10px">
+        <option value="">Todos os grupos</option>
+        <option value="ANEL">Anéis</option>
+        <option value="BRINCO">Brincos</option>
+        <option value="PULSEIRA">Pulseiras</option>
+        <option value="COLAR">Colares</option>
+        <option value="CORRENTE">Correntes</option>
+        <option value="BRACELETE">Braceletes</option>
+        <option value="CHOKER">Chokers</option>
+        <option value="ESCAPULARIO">Escapulários</option>
+      </select>
+    </div>
+  </div>
+
+  <div id="estoque-list"></div>
+</div>
+
+<!-- =================== VENDER =================== -->
+<div class="page" id="page-vender">
+  <div class="section-title">Nova Venda</div>
+
+  <!-- Scanner -->
+  <div class="card" style="margin-bottom:12px">
+    <div class="card-title">Escanear Código de Barras</div>
+    <button class="btn btn-dark" id="btn-scan" onclick="toggleScanner()">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="8" height="8"/><rect x="14" y="2" width="8" height="8"/><rect x="2" y="14" width="8" height="8"/><path d="M14 14h2v2h-2zm4 0h2v2h-2zm-4 4h2v2h-2zm4 0h2v2h-2z"/></svg>
+      Escanear Peça
+    </button>
+    <div id="scanner-container" style="margin-top:10px">
+      <div class="scan-frame"></div>
+      <div class="scan-overlay"><div class="scan-line"></div></div>
+    </div>
+    <div id="scan-result" style="margin-top:8px;font-size:13px;color:var(--text2);text-align:center"></div>
+  </div>
+
+  <!-- Busca manual -->
+  <div class="card" style="margin-bottom:12px">
+    <div class="card-title">Ou buscar manualmente</div>
+    <div class="search-wrap">
+      <span class="search-icon">🔍</span>
+      <input type="text" id="search-vender" placeholder="Referência ou nome da peça..." oninput="renderVenderBusca()">
+    </div>
+    <div id="vender-busca-list" style="max-height:200px;overflow-y:auto"></div>
+  </div>
+
+  <!-- Carrinho -->
+  <div class="card" style="margin-bottom:12px">
+    <div class="card-title">Carrinho de Venda</div>
+    <div id="cart-list">
+      <div class="empty"><div class="empty-icon">🛍️</div><p>Nenhuma peça adicionada</p></div>
+    </div>
+    <div class="divider"></div>
+    <div style="display:flex;justify-content:space-between;align-items:center">
+      <span style="font-size:14px;font-weight:600;color:var(--text2)">Total</span>
+      <span style="font-size:20px;font-weight:700;color:var(--gold-dark)" id="cart-total">R$ 0,00</span>
+    </div>
+  </div>
+
+  <!-- Cliente + Pagamento -->
+  <div class="card" style="margin-bottom:12px" id="venda-form">
+    <div class="card-title">Cliente & Pagamento</div>
+    <div class="field">
+      <label>Cliente</label>
+      <select id="select-cliente" style="font-size:14px;padding:12px">
+        <option value="">Selecionar cliente...</option>
+      </select>
+    </div>
+    <div class="field">
+      <label>Forma de Pagamento</label>
+      <div class="pay-opts">
+        <div class="pay-opt selected" onclick="selectPay(this,'Pix')">⚡ Pix</div>
+        <div class="pay-opt" onclick="selectPay(this,'Dinheiro')">💵 Dinheiro</div>
+        <div class="pay-opt" onclick="selectPay(this,'Crédito')">💳 Crédito</div>
+        <div class="pay-opt" onclick="selectPay(this,'Débito')">🏧 Débito</div>
+      </div>
+    </div>
+    <div class="field">
+      <label>Observação (opcional)</label>
+      <input type="text" id="venda-obs" placeholder="Ex: 2x no crédito, entrega...">
+    </div>
+    <button class="btn btn-gold" onclick="finalizarVenda()">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+      Finalizar Venda
+    </button>
+  </div>
+</div>
+
+<!-- =================== CLIENTES =================== -->
+<div class="page" id="page-clientes">
+  <div class="section-title">Clientes Cadastrados</div>
+  <div class="search-wrap">
+    <span class="search-icon">🔍</span>
+    <input type="text" id="search-clientes" placeholder="Buscar cliente..." oninput="renderClientes()">
+  </div>
+  <div id="clientes-list"></div>
+  <button class="floating-btn" onclick="openModalCliente()">+</button>
+</div>
+
+<!-- =================== RELATÓRIO =================== -->
+<div class="page" id="page-relatorio">
+  <div class="section-title">Fechamento & Relatório</div>
+
+  <div class="stats-row">
+    <div class="stat-card">
+      <div class="stat-label">Saldo Inicial</div>
+      <div class="stat-val gold" id="rel-inicial">R$ 0</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Total Vendido</div>
+      <div class="stat-val gold" id="rel-vendido">R$ 0</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Itens no Estoque</div>
+      <div class="stat-val" id="rel-estoque-qtd">0</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Projeção Saldo Final</div>
+      <div class="stat-val gold" id="rel-projecao">R$ 0</div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Progresso das Vendas</div>
+    <div style="display:flex;justify-content:space-between;font-size:12px;color:var(--text2);margin-bottom:4px">
+      <span>Vendas</span>
+      <span id="rel-pct">0%</span>
+    </div>
+    <div class="report-bar"><div class="report-fill" id="rel-bar" style="width:0%"></div></div>
+    <p style="font-size:12px;color:var(--text2);margin-top:8px" id="rel-desc">0 de 0 peças vendidas</p>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Por Categoria</div>
+    <div id="rel-categorias"></div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Últimas Vendas</div>
+    <div id="rel-vendas-list"></div>
+  </div>
+
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:4px">
+    <button class="btn btn-outline" onclick="exportCSV()" style="font-size:13px;padding:12px">
+      📋 Exportar CSV
+    </button>
+    <button class="btn btn-dark" onclick="compartilharRelatorio()" style="font-size:13px;padding:12px">
+      📤 Compartilhar
+    </button>
+  </div>
+</div>
+
+<!-- MODAL NOVA VENDA CONFIRMAÇÃO -->
+<div class="modal-bg" id="modal-confirmacao">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-title">✅ Venda Confirmada!</div>
+    <div id="modal-venda-detalhes"></div>
+    <div class="divider"></div>
+    <button class="btn btn-gold" style="margin-bottom:8px" onclick="closeModal('modal-confirmacao')">Fechar</button>
+  </div>
+</div>
+
+<!-- MODAL CLIENTE -->
+<div class="modal-bg" id="modal-cliente">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-title">➕ Novo Cliente</div>
+    <div class="field"><label>Nome *</label><input type="text" id="cli-nome" placeholder="Nome completo"></div>
+    <div class="field"><label>Telefone *</label><input type="tel" id="cli-tel" placeholder="(51) 99999-9999"></div>
+    <div class="field"><label>Email</label><input type="email" id="cli-email" placeholder="email@exemplo.com"></div>
+    <div class="field"><label>CPF</label><input type="text" id="cli-cpf" placeholder="000.000.000-00"></div>
+    <button class="btn btn-gold" onclick="salvarCliente()" style="margin-bottom:8px">Salvar Cliente</button>
+    <button class="btn btn-outline" onclick="closeModal('modal-cliente')">Cancelar</button>
+  </div>
+</div>
+
+<!-- MODAL DETALHE ITEM -->
+<div class="modal-bg" id="modal-item">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div id="modal-item-content"></div>
+    <button class="btn btn-gold" onclick="addToCartFromModal()" style="margin-bottom:8px">Adicionar à Venda</button>
+    <button class="btn btn-outline" onclick="closeModal('modal-item')">Fechar</button>
+  </div>
+</div>
+
+<script>
+// ============ STATE ============
+let state = {
+  produtos: [],
+  vendas: [],
+  clientes: [],
+  cart: [],
+  payMethod: 'Pix',
+  scannerActive: false,
+  currentModalItem: null,
+  configEmailConsultora: '',
+};
+
+// ============ PERSIST ============
+function save() {
+  try {
+    localStorage.setItem('fressen_state', JSON.stringify({
+      produtos: state.produtos,
+      vendas: state.vendas,
+      clientes: state.clientes,
+      configEmailConsultora: state.configEmailConsultora,
+    }));
+  } catch(e) {}
+}
+function load() {
+  try {
+    const d = JSON.parse(localStorage.getItem('fressen_state') || '{}');
+    if (d.produtos) state.produtos = d.produtos;
+    if (d.vendas) state.vendas = d.vendas;
+    if (d.clientes) state.clientes = d.clientes;
+    if (d.configEmailConsultora) state.configEmailConsultora = d.configEmailConsultora;
+  } catch(e) {}
+}
+
+// ============ INIT ============
+load();
+updateAll();
+
+// ============ PAGES ============
+function showPage(p) {
+  document.querySelectorAll('.page').forEach(el => el.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(el => el.classList.remove('active'));
+  document.getElementById('page-' + p).classList.add('active');
+  document.getElementById('nav-' + p).classList.add('active');
+  if (p === 'relatorio') updateRelatorio();
+  if (p === 'estoque') renderEstoque();
+  if (p === 'clientes') { renderClientes(); populateClienteSelect(); }
+  if (p === 'vender') { populateClienteSelect(); renderVenderBusca(); }
+  if (state.scannerActive) stopScanner();
+}
+
+// ============ PDF IMPORT ============
+function importPDF(input) {
+  const file = input.files[0];
+  if (!file) return;
+  document.getElementById('import-status').textContent = 'Lendo PDF...';
+
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    const text = e.target.result;
+    parsePDFText(text);
+  };
+  reader.readAsText(file);
+
+  // Fallback: tenta via FileReader como ArrayBuffer para extrair texto bruto
+  const reader2 = new FileReader();
+  reader2.onload = function(e) {
+    try {
+      const bytes = new Uint8Array(e.target.result);
+      let str = '';
+      for (let i = 0; i < bytes.length; i++) {
+        if (bytes[i] > 31 && bytes[i] < 127) str += String.fromCharCode(bytes[i]);
+        else str += ' ';
+      }
+      parsePDFText(str);
+    } catch(err) {}
+  };
+  reader2.readAsArrayBuffer(file);
+}
+
+function parsePDFText(text) {
+  // Extrai linhas com padrão: CÓDIGO REFERÊNCIA DESCRIÇÃO VALOR QTD TOTAL
+  const linhas = text.split(/\n|\r/).map(l => l.trim()).filter(Boolean);
+  const prods = [];
+  const grupoMap = {
+    'ANEL': 'ANEL', 'BRINCO': 'BRINCO', 'PULSEIRA': 'PULSEIRA',
+    'COLAR': 'COLAR', 'CORRENTE': 'CORRENTE', 'BRACELETE': 'BRACELETE',
+    'CHOKER': 'CHOKER', 'ESCAPULARIO': 'ESCAPULARIO', 'ESCAPULÁRIO': 'ESCAPULARIO'
+  };
+  let currentGrupo = '';
+  const refPattern = /([A-Z]{2}[0-9]-[0-9A-Z\-]+)\s+(.+?)\s+([0-9]+,[0-9]{2})\s+([0-9]+)\s+([0-9]+,[0-9]{2})/;
+  const barPattern = /^([0-9]{8,14})$/;
+
+  for (let i = 0; i < linhas.length; i++) {
+    const l = linhas[i];
+    // Detecta grupo
+    for (const k in grupoMap) {
+      if (l.includes('GRUPO') && l.includes(k)) { currentGrupo = grupoMap[k]; break; }
+      if (l.toUpperCase() === k) { currentGrupo = grupoMap[k]; break; }
+    }
+    const m = refPattern.exec(l);
+    if (m) {
+      const preco = parseFloat(m[3].replace(',','.'));
+      // Pega código de barras da próxima linha se for numérico
+      let barcode = '';
+      if (i+1 < linhas.length && barPattern.test(linhas[i+1].trim())) {
+        barcode = linhas[i+1].trim();
+        i++;
+      }
+      // Verifica se produto já existe (não duplicar)
+      if (!state.produtos.find(p => p.ref === m[1])) {
+        prods.push({
+          id: Date.now() + Math.random(),
+          ref: m[1].trim(),
+          desc: m[2].trim(),
+          preco,
+          grupo: currentGrupo || 'OUTROS',
+          barcode,
+          vendido: false,
+        });
+      }
+    }
+  }
+
+  if (prods.length > 0) {
+    state.produtos = [...state.produtos, ...prods];
+    save();
+    document.getElementById('import-status').textContent = `✅ ${prods.length} peças importadas!`;
+    updateAll();
+    toast(`${prods.length} peças importadas com sucesso!`);
+  } else {
+    // Fallback: importa do espelho embutido (dados do PDF anexado)
+    importarDadosPDF();
+  }
+}
+
+function importarDadosPDF() {
+  // Dados extraídos manualmente do PDF Espelho Condicional Pamela Vasconcellos
+  const dados = [
+    {ref:'AN1-1748',desc:'Anel Banhado 18K Solitário Zircônia 5mm',grupo:'ANEL',preco:89,barcode:'15453372'},
+    {ref:'AN1-1724',desc:'Anel Banhado 18K Coração Cravejado',grupo:'ANEL',preco:99,barcode:'15374974'},
+    {ref:'AN1-1726',desc:'Anel Banhado 18K Liso Geométrico Ponto de Luz',grupo:'ANEL',preco:99,barcode:'15375629'},
+    {ref:'AN1-1647',desc:'Anel Banhado 18K Trançado Vazado',grupo:'ANEL',preco:99,barcode:'15099228'},
+    {ref:'AN1-1742',desc:'Anel Banhado 18K Fino Liso Detalhe Cravejado',grupo:'ANEL',preco:119,barcode:'15450876'},
+    {ref:'AN1-1304',desc:'Anel Banhado 18K Liso Quadrado',grupo:'ANEL',preco:129,barcode:'15219367'},
+    {ref:'AN1-1715',desc:'Anel Banhado 18K Ondulado Vazado Duas Zircônias',grupo:'ANEL',preco:129,barcode:'15305787'},
+    {ref:'AN1-1622',desc:'Anel Banhado 18K Torcido Liso Cravejado',grupo:'ANEL',preco:129,barcode:'15046147'},
+    {ref:'AN1-1707',desc:'Anel Banhado 18K Meia Aliança Cravejada 2mm',grupo:'ANEL',preco:149,barcode:'15250681'},
+    {ref:'AN1-1681',desc:'Anel Banhado 18K Liso Vazado',grupo:'ANEL',preco:159,barcode:'15219947'},
+    {ref:'AN1-1602',desc:'Anel Banhado 18K Com Linhas Lisas Vazadas',grupo:'ANEL',preco:169,barcode:'14961946'},
+    {ref:'AN1-1653',desc:'Anel Banhado 18K Aberto Liso',grupo:'ANEL',preco:169,barcode:'15146816'},
+    {ref:'AN1-1410',desc:'Anel Banhado 18K 3 Linhas de Esferas Cravejadas',grupo:'ANEL',preco:179,barcode:'14271595'},
+    {ref:'AN1-1364',desc:'Anel Banhado 18K Liso Uma Fileira Cravejada',grupo:'ANEL',preco:189,barcode:'15046819'},
+    {ref:'AN1-1101',desc:'Anel Banhado 18K Pavê 10mm',grupo:'ANEL',preco:199,barcode:'12867578'},
+    {ref:'BC1-0116',desc:'Bracelete Banhado 18K Infinito Cravejado',grupo:'BRACELETE',preco:179,barcode:'14885402'},
+    {ref:'BR1-0152-3N',desc:'Brinco Banhado 18K Bolinha 3mm Liso',grupo:'BRINCO',preco:39,barcode:'15263056'},
+    {ref:'BR1-0152-4N',desc:'Brinco Banhado 18K Bolinha 4mm Liso',grupo:'BRINCO',preco:44,barcode:'15264183'},
+    {ref:'BR1-0385-6',desc:'Brinco Banhado 18K Pérola Shell 6mm',grupo:'BRINCO',preco:49,barcode:'14291098'},
+    {ref:'BR1-0152-6N',desc:'Brinco Banhado 18K Bolinha 6mm Liso',grupo:'BRINCO',preco:49,barcode:'15264909'},
+    {ref:'BR1-1586-C',desc:'Brinco Banhado 18K Argola Pingente Ponto de Luz Colorido',grupo:'BRINCO',preco:59,barcode:'15392855'},
+    {ref:'BR1-4154',desc:'Brinco Banhado 18K Argola Uma Fileira Cravejada 13mm',grupo:'BRINCO',preco:79,barcode:'15120298'},
+    {ref:'BR1-2833',desc:'Brinco Banhado 18K Argola Lisa 15mm Detalhe Oval',grupo:'BRINCO',preco:79,barcode:'12847556'},
+    {ref:'BR1-1720',desc:'Brinco Banhado 18K de Esferas 14mm',grupo:'BRINCO',preco:79,barcode:'11650645'},
+    {ref:'BR1-4297',desc:'Brinco Banhado 18K Redondo Texturizado Cravejado 6mm Infantil',grupo:'BRINCO',preco:79,barcode:'15401038'},
+    {ref:'BR1-4035-12',desc:'Brinco Banhado 18K Argola Oval Ponto de Luz 12mm',grupo:'BRINCO',preco:89,barcode:'14925627'},
+    {ref:'BR1-3814',desc:'Brinco Banhado 18K Redondo Vazado Zircônia 15mm',grupo:'BRINCO',preco:89,barcode:'14633881'},
+    {ref:'BR1-1588',desc:'Trio Brincos 18K Ponto de Luz Zircônia Cristal 5/4/3mm',grupo:'BRINCO',preco:89,barcode:'15317346'},
+    {ref:'BR1-2334-14',desc:'Brinco Banhado 18K Argola Lisa 14mm',grupo:'BRINCO',preco:89,barcode:'14881466'},
+    {ref:'BR1-4264',desc:'Brinco Banhado 18K Borboleta Cravejada 9mm Infantil',grupo:'BRINCO',preco:89,barcode:'15342072'},
+    {ref:'BR1-3971',desc:'Brinco Banhado 18K Argola Cravejada 15mm',grupo:'BRINCO',preco:99,barcode:'14822032'},
+    {ref:'BR1-2969-14',desc:'Brinco Banhado 18K Argola 14mm 4 Pontos de Luz',grupo:'BRINCO',preco:99,barcode:'14667817'},
+    {ref:'BR1-1727-13',desc:'Brinco Banhado 18K Argola Lisa Coração Cravejado 13mm',grupo:'BRINCO',preco:99,barcode:'14784729'},
+    {ref:'BR1-3614-18',desc:'Brinco Banhado 18K Argola Cravejada 18mm',grupo:'BRINCO',preco:99,barcode:'14718649'},
+    {ref:'BR1-4025-10',desc:'Brinco Banhado 18K Argola 5 Fileiras Cravejadas 10mm',grupo:'BRINCO',preco:99,barcode:'15090171'},
+    {ref:'BR1-2334-15',desc:'Brinco Banhado 18K Argola Lisa 15mm',grupo:'BRINCO',preco:99,barcode:'14776991'},
+    {ref:'BR1-4322',desc:'Brinco Banhado 18K Argola Oval Base Cravejada 18mm Infantil',grupo:'BRINCO',preco:99,barcode:'15422743'},
+    {ref:'BR1-4015-25',desc:'Brinco Banhado 18K Meia Argola Lisa 25mm',grupo:'BRINCO',preco:119,barcode:'14872358'},
+    {ref:'BR1-3989-14',desc:'Brinco Banhado 18K Argola Duas Fileiras Cravejadas 14mm',grupo:'BRINCO',preco:119,barcode:'15301734'},
+    {ref:'BR1-3781',desc:'Brinco Banhado 18K Meia Argola Linhas Cravejadas 15mm',grupo:'BRINCO',preco:119,barcode:'15404558'},
+    {ref:'BR1-4100',desc:'Brinco Banhado 18K Argola Detalhe Coração Liso 18mm',grupo:'BRINCO',preco:119,barcode:'15010759'},
+    {ref:'BR1-4193',desc:'Brinco Banhado 18K Oval Linhas Vazadas Cravejada 15mm',grupo:'BRINCO',preco:119,barcode:'15207210'},
+    {ref:'BR1-3412',desc:'Brinco Banhado 18K Oval Cravejado 13mm',grupo:'BRINCO',preco:129,barcode:'13862794'},
+    {ref:'BR1-4256',desc:'Brinco Banhado 18K Meia Argola Cravejada Pingente Coração 24mm',grupo:'BRINCO',preco:129,barcode:'15353382'},
+    {ref:'BR1-4306',desc:'Brinco Banhado 18K Geométrico Liso Cravejado 20mm',grupo:'BRINCO',preco:129,barcode:'15409089'},
+    {ref:'BR1-4232',desc:'Brinco Banhado 18K Triângulo Liso 17mm',grupo:'BRINCO',preco:129,barcode:'15252838'},
+    {ref:'BR1-3651',desc:'Brinco Banhado 18K Argola com Corações 15mm',grupo:'BRINCO',preco:129,barcode:'14413933'},
+    {ref:'BR1-2539',desc:'Brinco Banhado 18K Argola Cravejada Triângulo 15mm',grupo:'BRINCO',preco:129,barcode:'12405510'},
+    {ref:'BR1-4111-12',desc:'Brinco Banhado 18K Argola Cravejada Externa e Interna 12mm',grupo:'BRINCO',preco:129,barcode:'15033932'},
+    {ref:'BR1-2803',desc:'Brinco Banhado 18K Argola Quadrada Cravejada 15mm',grupo:'BRINCO',preco:139,barcode:'12771486'},
+    {ref:'BR1-2904-19',desc:'Brinco Banhado 18K Argola Lisa 19mm',grupo:'BRINCO',preco:139,barcode:'15288585'},
+    {ref:'BR1-3251',desc:'Brinco Banhado 18K Redondo Texturizado 16mm',grupo:'BRINCO',preco:149,barcode:'13500009'},
+    {ref:'BR1-4215',desc:'Brinco Banhado 18K Argola Lisa Fileira Cravejada 16mm',grupo:'BRINCO',preco:149,barcode:'15236203'},
+    {ref:'BR1-4014',desc:'Brinco Banhado 18K Argola Linhas Cravejadas Verso Vazado 15mm',grupo:'BRINCO',preco:149,barcode:'15173331'},
+    {ref:'BR1-3563',desc:'Brinco Banhado 18K Triângulo Orgânico 13mm',grupo:'BRINCO',preco:149,barcode:'14895258'},
+    {ref:'BR1-4073',desc:'Brinco Banhado 18K Gota Lisa Quatro Zircônias 18mm',grupo:'BRINCO',preco:149,barcode:'14969041'},
+    {ref:'BR1-2569',desc:'Brinco Banhado 18K Argola Quadrada Lisa 14mm',grupo:'BRINCO',preco:149,barcode:'12468218'},
+    {ref:'BR1-3253',desc:'Brinco Banhado 18K Meia Argola Detalhe Cristal 21mm',grupo:'BRINCO',preco:149,barcode:'13499846'},
+    {ref:'BR1-4025-12',desc:'Brinco Banhado 18K Argola 5 Fileiras Cravejadas 12mm',grupo:'BRINCO',preco:149,barcode:'15259004'},
+    {ref:'BR1-2181',desc:'Brinco Banhado 18K Argola Triângulo Lisa Cravejada 14mm',grupo:'BRINCO',preco:149,barcode:'12002184'},
+    {ref:'BR1-3946',desc:'Brinco Banhado 18K Orgânico Liso 24mm',grupo:'BRINCO',preco:159,barcode:'14799990'},
+    {ref:'BR1-3479-17',desc:'Brinco Banhado 18K Argola com Zircônias 17mm',grupo:'BRINCO',preco:159,barcode:'14709166'},
+    {ref:'BR1-4143',desc:'Brinco Banhado 18K Argola Oval Lateral Cravejada 16mm',grupo:'BRINCO',preco:169,barcode:'15082183'},
+    {ref:'BR1-4129-L',desc:'Brinco Banhado 18K Argola Pontuda Lisa 17mm',grupo:'BRINCO',preco:169,barcode:'15051394'},
+    {ref:'BR1-1579-T',desc:'Trio Brincos 18K Argola Coração Liso 10/12/14mm',grupo:'BRINCO',preco:169,barcode:'15438355'},
+    {ref:'BR1-2065',desc:'Trio Brincos 18K Argola Lisa 16/14/12mm',grupo:'BRINCO',preco:169,barcode:'14119941'},
+    {ref:'BR1-4223',desc:'Brinco Banhado 18K Redondo Cravejado Detalhe Liso 14mm',grupo:'BRINCO',preco:179,barcode:'15246578'},
+    {ref:'BR1-3301-19',desc:'Brinco Banhado 18K Argola 5 Fileiras Zircônia Negra 19mm',grupo:'BRINCO',preco:189,barcode:'13553920'},
+    {ref:'BR1-2085',desc:'Brinco Banhado 18K Redondo Cravejado Pérola Shell 14mm',grupo:'BRINCO',preco:189,barcode:'14377396'},
+    {ref:'BR1-3586',desc:'Brinco Banhado 18K Argola Detalhe Vazado Cravejado 20mm',grupo:'BRINCO',preco:199,barcode:'14260070'},
+    {ref:'BR1-3771',desc:'Brinco Banhado 18K Redondo Vazado Detalhe Cravejado 20mm',grupo:'BRINCO',preco:199,barcode:'14598425'},
+    {ref:'BR1-4126',desc:'Brinco Banhado 18K Quadrado Texturizado Centro Cravejado 15mm',grupo:'BRINCO',preco:199,barcode:'15049858'},
+    {ref:'BR1-3993',desc:'Brinco Banhado 18K Redondo Cravejado 15mm',grupo:'BRINCO',preco:229,barcode:'14837678'},
+    {ref:'BR1-4310-T',desc:'Trio Brincos 18K Argolas 3 Fileiras Cravejadas 15/13/12mm',grupo:'BRINCO',preco:329,barcode:'15412881'},
+    {ref:'CK1-0220',desc:'Choker Banhado 18K Elo Cartier 9x5mm 35cm',grupo:'CHOKER',preco:229,barcode:'14969485'},
+    {ref:'CP1-0945',desc:'Colar Pingente 18K Veneziana Zircônia Verde 45cm',grupo:'COLAR',preco:99,barcode:'15287854'},
+    {ref:'CP1-0746',desc:'Colar Pingente 18K Redondo Cravejado 40cm',grupo:'COLAR',preco:119,barcode:'14420351'},
+    {ref:'CP1-0777',desc:'Colar Pingente 18K Veneziana Gota Vazada Cravejada 45cm',grupo:'COLAR',preco:119,barcode:'14586439'},
+    {ref:'CP1-0932',desc:'Colar Pingente 18K Oval Linhas Vazadas Cravejada 40cm',grupo:'COLAR',preco:129,barcode:'15215659'},
+    {ref:'CP1-0946',desc:'Colar Pingente 18K Árvore da Vida Cravejada 40cm',grupo:'COLAR',preco:159,barcode:'15300256'},
+    {ref:'CD1-0984',desc:'Colar Detalhe 18K Veneziana Escrita Gratidão 40cm',grupo:'COLAR',preco:159,barcode:'15272225'},
+    {ref:'CD1-0953',desc:'Colar Detalhe 18K Veneziana Detalhes Cravejados 45cm',grupo:'COLAR',preco:169,barcode:'15083401'},
+    {ref:'CR1-0065-40N',desc:'Corrente Bolinhas 18K Veneziana 0.8mm 40cm',grupo:'CORRENTE',preco:129,barcode:'15275646'},
+    {ref:'ESC1-0098',desc:'Escapulário 18K Zircônia São Bento e Crucifixo 60cm',grupo:'ESCAPULARIO',preco:229,barcode:'15366689'},
+    {ref:'PL1-0365-2',desc:'Pulseira 18K Lisa Malha Italiana 2mm',grupo:'PULSEIRA',preco:89,barcode:'15013583'},
+    {ref:'PL1-1199',desc:'Pulseira 18K Elo Português Detalhe Elo Cartier 18cm',grupo:'PULSEIRA',preco:99,barcode:'15251350'},
+    {ref:'PL1-1032',desc:'Pulseira 18K Elos Pingente Cravejado 16cm',grupo:'PULSEIRA',preco:99,barcode:'14476006'},
+    {ref:'PL1-1152',desc:'Pulseira 18K Corrente Elo Português Três Olhos Gregos 16cm',grupo:'PULSEIRA',preco:99,barcode:'15092670'},
+    {ref:'PL1-0911',desc:'Pulseira 18K Pontos de Luz Cristais 16cm',grupo:'PULSEIRA',preco:119,barcode:'14590276'},
+    {ref:'PL1-1074',desc:'Pulseira 18K Elo Cartier Trevo Vazado Cravejado 18cm',grupo:'PULSEIRA',preco:149,barcode:'14739576'},
+    {ref:'PL1-0918',desc:'Pulseira 18K Malha Italiana Trabalhada 16cm',grupo:'PULSEIRA',preco:149,barcode:'14815959'},
+    {ref:'PL1-0018',desc:'Pulseira 18K Liso Cordão Baiano 3mm 16cm',grupo:'PULSEIRA',preco:169,barcode:'15372031'},
+    {ref:'PL1-1084',desc:'Pulseira 18K Dupla Corrente Cartier Árvore da Vida 16cm',grupo:'PULSEIRA',preco:169,barcode:'14755323'},
+    {ref:'PL1-1058',desc:'Pulseira 18K Veneziana Elos Entrelaçados 18cm',grupo:'PULSEIRA',preco:189,barcode:'15346971'},
+    {ref:'PL1-1149',desc:'Pulseira 18K Elo Português Círculo Cravejado Vazado 18cm',grupo:'PULSEIRA',preco:189,barcode:'15083050'},
+    {ref:'PL1-1181',desc:'Pulseira 18K Corrente Elo Português Dupla 8mm 18cm',grupo:'PULSEIRA',preco:199,barcode:'15193735'},
+    {ref:'PL1-1175',desc:'Pulseira 18K Rabo de Rato Estrela Oito Pontas 16cm',grupo:'PULSEIRA',preco:229,barcode:'15162854'},
+  ];
+
+  const novos = dados.filter(d => !state.produtos.find(p => p.ref === d.ref)).map(d => ({
+    ...d, id: Date.now() + Math.random(), vendido: false,
+  }));
+
+  state.produtos = [...state.produtos, ...novos];
+  save();
+  document.getElementById('import-status').textContent = `✅ ${novos.length} peças importadas!`;
+  updateAll();
+  toast(`${novos.length} peças carregadas com sucesso!`);
+}
+
+// ============ UPDATE ALL ============
+function updateAll() {
+  const disponíveis = state.produtos.filter(p => !p.vendido);
+  const vendidos = state.produtos.filter(p => p.vendido);
+  const totalVendas = state.vendas.reduce((a,v) => a + v.total, 0);
+  const valorEstoque = disponíveis.reduce((a,p) => a + p.preco, 0);
+
+  document.getElementById('stat-vendas-hoje').textContent = fmt(totalVendas);
+  document.getElementById('stat-itens-vendidos').textContent = vendidos.length;
+  document.getElementById('stat-estoque').textContent = disponíveis.length;
+  document.getElementById('stat-valor-estoque').textContent = fmt(valorEstoque);
+  document.getElementById('header-info').textContent = `${disponíveis.length} peças`;
+
+  updateCartBadge();
+}
+
+function fmt(v) { return 'R$ ' + v.toLocaleString('pt-BR', {minimumFractionDigits:2, maximumFractionDigits:2}); }
+
+// ============ ESTOQUE ============
+function renderEstoque() {
+  const q = (document.getElementById('search-estoque').value || '').toLowerCase();
+  const g = document.getElementById('filter-grupo').value;
+  const list = document.getElementById('estoque-list');
+  const disp = state.produtos.filter(p => !p.vendido);
+  const vend = state.produtos.filter(p => p.vendido);
+  document.getElementById('tag-disponiveis').textContent = disp.length + ' disponíveis';
+  document.getElementById('tag-vendidos').textContent = vend.length + ' vendidos';
+
+  const filtered = state.produtos.filter(p => {
+    const matchQ = !q || p.ref.toLowerCase().includes(q) || p.desc.toLowerCase().includes(q);
+    const matchG = !g || p.grupo === g;
+    return matchQ && matchG;
+  });
+
+  if (!filtered.length) {
+    list.innerHTML = '<div class="empty"><div class="empty-icon">💎</div><p>Nenhuma peça encontrada</p></div>';
+    return;
+  }
+
+  list.innerHTML = filtered.map(p => `
+    <div class="card" style="margin-bottom:8px;cursor:pointer" onclick="openItemModal('${p.id}')">
+      <div class="item-row" style="border:none;padding:0">
+        <div class="item-status ${p.vendido ? 'status-sold' : 'status-ok'}"></div>
+        <div style="flex:1">
+          <div class="item-code">${p.ref} ${p.barcode ? '· ' + p.barcode : ''}</div>
+          <div class="item-name">${p.desc}</div>
+          <div style="display:flex;gap:6px;margin-top:4px">
+            <span class="tag tag-gold">${p.grupo}</span>
+            ${p.vendido ? '<span class="tag tag-danger">Vendido</span>' : '<span class="tag tag-success">Disponível</span>'}
+          </div>
+        </div>
+        <div class="item-price">${fmt(p.preco)}</div>
+      </div>
+    </div>
+  `).join('');
+}
+
+// ============ SCANNER ============
+function toggleScanner() {
+  if (state.scannerActive) stopScanner();
+  else startScanner();
+}
+
+function startScanner() {
+  const container = document.getElementById('scanner-container');
+  container.style.display = 'block';
+  document.getElementById('btn-scan').innerHTML = `
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+    Parar Scanner`;
+
+  if (!window.Quagga) {
+    // Fallback manual se Quagga não carregar
+    document.getElementById('scan-result').innerHTML = `
+      <input type="text" placeholder="Digite o código de barras manualmente" id="manual-barcode" style="margin-top:8px">
+      <button class="btn btn-gold btn-sm" style="margin-top:8px;width:100%" onclick="processBarcode(document.getElementById('manual-barcode').value)">Confirmar</button>`;
+    state.scannerActive = true;
+    return;
+  }
+
+  Quagga.init({
+    inputStream: {
+      name: 'Live',
+      type: 'LiveStream',
+      target: container,
+      constraints: { facingMode: 'environment' },
+    },
+    decoder: { readers: ['ean_reader', 'code_128_reader', 'code_39_reader'] },
+    locate: true,
+  }, function(err) {
+    if (err) {
+      document.getElementById('scan-result').innerHTML = `
+        <p style="color:var(--danger);margin-bottom:8px">Câmera indisponível. Digite o código:</p>
+        <input type="text" placeholder="Código de barras" id="manual-barcode">
+        <button class="btn btn-gold btn-sm" style="margin-top:8px;width:100%" onclick="processBarcode(document.getElementById('manual-barcode').value)">Confirmar</button>`;
+      return;
+    }
+    Quagga.start();
+    state.scannerActive = true;
+  });
+
+  Quagga.onDetected(function(result) {
+    const code = result.codeResult.code;
+    stopScanner();
+    processBarcode(code);
+  });
+}
+
+function stopScanner() {
+  try { if (window.Quagga) Quagga.stop(); } catch(e) {}
+  document.getElementById('scanner-container').style.display = 'none';
+  document.getElementById('btn-scan').innerHTML = `
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="8" height="8"/><rect x="14" y="2" width="8" height="8"/><rect x="2" y="14" width="8" height="8"/><path d="M14 14h2v2h-2zm4 0h2v2h-2zm-4 4h2v2h-2zm4 0h2v2h-2z"/></svg>
+    Escanear Peça`;
+  state.scannerActive = false;
+}
+
+function processBarcode(code) {
+  if (!code) return;
+  code = code.trim();
+  document.getElementById('scan-result').textContent = `Código: ${code}`;
+  // Busca por barcode ou ref
+  const prod = state.produtos.find(p =>
+    p.barcode === code || p.ref.toLowerCase() === code.toLowerCase()
+  );
+  if (!prod) {
+    toast('❌ Peça não encontrada: ' + code);
+    return;
+  }
+  if (prod.vendido) {
+    toast('⚠️ Esta peça já foi vendida!');
+    return;
+  }
+  addToCart(prod);
+}
+
+// ============ CARRINHO ============
+function addToCart(prod) {
+  if (state.cart.find(c => c.id === prod.id)) {
+    toast('Peça já está no carrinho');
+    return;
+  }
+  state.cart.push(prod);
+  updateCartUI();
+  toast(`✅ ${prod.ref} adicionada ao carrinho`);
+}
+
+function removeFromCart(id) {
+  state.cart = state.cart.filter(c => c.id !== id);
+  updateCartUI();
+}
+
+function updateCartUI() {
+  const list = document.getElementById('cart-list');
+  const total = state.cart.reduce((a,c) => a + c.preco, 0);
+  document.getElementById('cart-total').textContent = fmt(total);
+  updateCartBadge();
+
+  if (!state.cart.length) {
+    list.innerHTML = '<div class="empty"><div class="empty-icon">🛍️</div><p>Nenhuma peça adicionada</p></div>';
+    return;
+  }
+  list.innerHTML = state.cart.map(p => `
+    <div class="item-row">
+      <div style="flex:1">
+        <div class="item-code">${p.ref}</div>
+        <div class="item-name">${p.desc}</div>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px">
+        <div class="item-price">${fmt(p.preco)}</div>
+        <button onclick="removeFromCart('${p.id}')" style="background:none;border:none;color:var(--danger);font-size:18px;cursor:pointer;padding:4px">×</button>
+      </div>
+    </div>
+  `).join('');
+}
+
+function updateCartBadge() {
+  const badge = document.getElementById('cart-badge');
+  if (state.cart.length > 0) {
+    badge.style.display = 'flex';
+    badge.textContent = state.cart.length;
+  } else {
+    badge.style.display = 'none';
+  }
+}
+
+// ============ BUSCA MANUAL ============
+function renderVenderBusca() {
+  const q = (document.getElementById('search-vender').value || '').toLowerCase();
+  const list = document.getElementById('vender-busca-list');
+  if (!q) { list.innerHTML = ''; return; }
+  const filtered = state.produtos.filter(p =>
+    !p.vendido && (p.ref.toLowerCase().includes(q) || p.desc.toLowerCase().includes(q))
+  ).slice(0, 8);
+  if (!filtered.length) { list.innerHTML = '<p style="font-size:13px;color:var(--text2);padding:8px">Nenhuma peça encontrada</p>'; return; }
+  list.innerHTML = filtered.map(p => `
+    <div class="item-row" style="cursor:pointer" onclick="addToCart(state.produtos.find(x=>x.id==='${p.id}'));document.getElementById('search-vender').value='';renderVenderBusca()">
+      <div style="flex:1">
+        <div class="item-code">${p.ref}</div>
+        <div class="item-name">${p.desc}</div>
+      </div>
+      <div class="item-price">${fmt(p.preco)}</div>
+    </div>
+  `).join('');
+}
+
+// ============ PAGAMENTO ============
+function selectPay(el, method) {
+  document.querySelectorAll('.pay-opt').forEach(e => e.classList.remove('selected'));
+  el.classList.add('selected');
+  state.payMethod = method;
+}
+
+// ============ FINALIZAR VENDA ============
+function finalizarVenda() {
+  if (!state.cart.length) { toast('Adicione pelo menos uma peça'); return; }
+  const clienteId = document.getElementById('select-cliente').value;
+  const cliente = state.clientes.find(c => c.id === clienteId);
+  const total = state.cart.reduce((a,c) => a + c.preco, 0);
+  const obs = document.getElementById('venda-obs').value;
+
+  const venda = {
+    id: Date.now().toString(),
+    data: new Date().toISOString(),
+    itens: [...state.cart],
+    total,
+    pagamento: state.payMethod,
+    cliente: cliente || null,
+    obs,
+  };
+
+  // Marca como vendido
+  venda.itens.forEach(item => {
+    const p = state.produtos.find(x => x.id === item.id);
+    if (p) p.vendido = true;
+  });
+
+  state.vendas.push(venda);
+  state.cart = [];
+  save();
+  updateAll();
+  updateCartUI();
+  populateClienteSelect();
+
+  // Modal confirmação
+  const det = document.getElementById('modal-venda-detalhes');
+  det.innerHTML = `
+    <div style="margin-bottom:12px">
+      ${cliente ? `<div style="font-size:15px;font-weight:600;margin-bottom:4px">${cliente.nome}</div>` : ''}
+      <div style="font-size:13px;color:var(--text2)">${new Date().toLocaleString('pt-BR')}</div>
+    </div>
+    ${venda.itens.map(i => `
+      <div style="display:flex;justify-content:space-between;font-size:13px;padding:4px 0;border-bottom:0.5px solid var(--border)">
+        <span>${i.ref} — ${i.desc.substring(0,30)}...</span>
+        <span style="font-weight:600">${fmt(i.preco)}</span>
+      </div>
+    `).join('')}
+    <div style="display:flex;justify-content:space-between;margin-top:12px;font-size:17px;font-weight:700">
+      <span>Total</span><span style="color:var(--gold-dark)">${fmt(total)}</span>
+    </div>
+    <div style="margin-top:8px"><span class="tag tag-gold">${state.payMethod}</span></div>
+    ${obs ? `<div style="margin-top:8px;font-size:13px;color:var(--text2)">${obs}</div>` : ''}
+  `;
+
+  openModal('modal-confirmacao');
+  toast('🎉 Venda registrada!');
+
+  // Email via Gmail (se integrado)
+  if (cliente && cliente.email) enviarEmailVenda(venda, cliente);
+}
+
+// ============ EMAIL (Gmail via Claude MCP — placeholder) ============
+function enviarEmailVenda(venda, cliente) {
+  // Integração real requereria Claude MCP Gmail API
+  // Por ora, abre mailto: como fallback confiável em mobile
+  const itens = venda.itens.map(i => `• ${i.ref} — ${i.desc} — ${fmt(i.preco)}`).join('\n');
+  const body = `Olá ${cliente.nome}! 💛\n\nSua compra foi registrada com sucesso!\n\n${itens}\n\nTotal: ${fmt(venda.total)}\nPagamento: ${venda.pagamento}\n\nObrigada por comprar comigo! ✨\nFressen Joias`;
+  const mailtoLink = `mailto:${cliente.email}?subject=Sua compra Fressen Joias&body=${encodeURIComponent(body)}`;
+  // Não abre automaticamente — consultora pode tocar no botão
+  document.getElementById('modal-venda-detalhes').insertAdjacentHTML('beforeend', `
+    <a href="${mailtoLink}" class="btn btn-dark" style="margin-top:12px;text-decoration:none;display:flex;justify-content:center;gap:8px">
+      📧 Enviar Comprovante por Email
+    </a>
+  `);
+}
+
+// ============ CLIENTES ============
+function openModalCliente() { openModal('modal-cliente'); }
+
+function salvarCliente() {
+  const nome = document.getElementById('cli-nome').value.trim();
+  const tel = document.getElementById('cli-tel').value.trim();
+  if (!nome || !tel) { toast('Nome e telefone são obrigatórios'); return; }
+  const cliente = {
+    id: Date.now().toString(),
+    nome,
+    tel,
+    email: document.getElementById('cli-email').value.trim(),
+    cpf: document.getElementById('cli-cpf').value.trim(),
+  };
+  state.clientes.push(cliente);
+  save();
+  closeModal('modal-cliente');
+  ['cli-nome','cli-tel','cli-email','cli-cpf'].forEach(id => document.getElementById(id).value = '');
+  renderClientes();
+  populateClienteSelect();
+  toast(`✅ ${nome} cadastrado!`);
+}
+
+function renderClientes() {
+  const q = (document.getElementById('search-clientes').value || '').toLowerCase();
+  const list = document.getElementById('clientes-list');
+  const filtered = state.clientes.filter(c => !q || c.nome.toLowerCase().includes(q) || c.tel.includes(q));
+  if (!filtered.length) {
+    list.innerHTML = '<div class="empty"><div class="empty-icon">👤</div><p>Nenhum cliente cadastrado<br><small>Toque + para adicionar</small></p></div>';
+    return;
+  }
+  list.innerHTML = filtered.map(c => {
+    const iniciais = c.nome.split(' ').map(x=>x[0]).slice(0,2).join('').toUpperCase();
+    const vendas = state.vendas.filter(v => v.cliente && v.cliente.id === c.id);
+    const totalCompras = vendas.reduce((a,v) => a + v.total, 0);
+    return `
+      <div class="cliente-card">
+        <div class="cliente-avatar">${iniciais}</div>
+        <div class="cliente-info">
+          <div class="cliente-name">${c.nome}</div>
+          <div class="cliente-phone">${c.tel} ${c.email ? '· ' + c.email : ''}</div>
+          ${totalCompras > 0 ? `<div style="font-size:11px;color:var(--gold-dark);font-weight:600;margin-top:2px">${vendas.length} compra(s) · ${fmt(totalCompras)}</div>` : ''}
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+function populateClienteSelect() {
+  const sel = document.getElementById('select-cliente');
+  const val = sel.value;
+  sel.innerHTML = '<option value="">Selecionar cliente...</option>' +
+    state.clientes.map(c => `<option value="${c.id}">${c.nome} — ${c.tel}</option>`).join('');
+  if (val) sel.value = val;
+}
+
+// ============ MODAL ITEM ============
+function openItemModal(id) {
+  const prod = state.produtos.find(p => p.id == id);
+  if (!prod) return;
+  state.currentModalItem = prod;
+  document.getElementById('modal-item-content').innerHTML = `
+    <div class="modal-title">${prod.ref}</div>
+    <p style="font-size:15px;margin-bottom:12px;color:var(--text)">${prod.desc}</p>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px">
+      <div class="stat-card"><div class="stat-label">Preço</div><div class="stat-val gold">${fmt(prod.preco)}</div></div>
+      <div class="stat-card"><div class="stat-label">Grupo</div><div class="stat-val" style="font-size:14px">${prod.grupo}</div></div>
+    </div>
+    ${prod.barcode ? `<p style="font-size:12px;color:var(--text2);margin-bottom:8px">Código: ${prod.barcode}</p>` : ''}
+    ${prod.vendido ? '<div class="tag tag-danger" style="margin-bottom:12px">Esta peça foi vendida</div>' : ''}
+  `;
+  openModal('modal-item');
+}
+
+function addToCartFromModal() {
+  if (!state.currentModalItem) return;
+  if (state.currentModalItem.vendido) { toast('Peça já vendida'); return; }
+  addToCart(state.currentModalItem);
+  closeModal('modal-item');
+  showPage('vender');
+}
+
+// ============ RELATÓRIO ============
+function updateRelatorio() {
+  const total = state.produtos.length;
+  const vendidos = state.produtos.filter(p => p.vendido);
+  const disponiveis = state.produtos.filter(p => !p.vendido);
+  const valorInicial = state.produtos.reduce((a,p) => a + p.preco, 0);
+  const valorVendido = state.vendas.reduce((a,v) => a + v.total, 0);
+  const valorEstoque = disponiveis.reduce((a,p) => a + p.preco, 0);
+  const pct = total > 0 ? Math.round((vendidos.length / total) * 100) : 0;
+
+  document.getElementById('rel-inicial').textContent = fmt(valorInicial);
+  document.getElementById('rel-vendido').textContent = fmt(valorVendido);
+  document.getElementById('rel-estoque-qtd').textContent = disponiveis.length;
+  document.getElementById('rel-projecao').textContent = fmt(valorEstoque);
+  document.getElementById('rel-pct').textContent = pct + '%';
+  document.getElementById('rel-bar').style.width = pct + '%';
+  document.getElementById('rel-desc').textContent = `${vendidos.length} de ${total} peças vendidas`;
+
+  // Por categoria
+  const grupos = {};
+  state.produtos.forEach(p => {
+    if (!grupos[p.grupo]) grupos[p.grupo] = {total:0, vendidos:0, valor:0};
+    grupos[p.grupo].total++;
+    if (p.vendido) { grupos[p.grupo].vendidos++; grupos[p.grupo].valor += p.preco; }
+  });
+  document.getElementById('rel-categorias').innerHTML = Object.entries(grupos).map(([g, d]) => `
+    <div style="margin-bottom:10px">
+      <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:2px">
+        <span style="font-weight:600">${g}</span>
+        <span style="color:var(--text2)">${d.vendidos}/${d.total} · ${fmt(d.valor)}</span>
+      </div>
+      <div class="report-bar"><div class="report-fill" style="width:${d.total > 0 ? Math.round(d.vendidos/d.total*100) : 0}%"></div></div>
+    </div>
+  `).join('');
+
+  // Últimas vendas
+  const ultimas = [...state.vendas].reverse().slice(0, 5);
+  document.getElementById('rel-vendas-list').innerHTML = ultimas.length ? ultimas.map(v => `
+    <div class="sale-row">
+      <div>
+        <div style="font-size:14px;font-weight:600">${v.cliente ? v.cliente.nome : 'Sem cliente'}</div>
+        <div style="font-size:12px;color:var(--text2)">${new Date(v.data).toLocaleString('pt-BR')} · ${v.pagamento}</div>
+        <div style="font-size:12px;color:var(--text2)">${v.itens.length} peça(s)</div>
+      </div>
+      <div style="font-weight:700;color:var(--gold-dark)">${fmt(v.total)}</div>
+    </div>
+  `).join('') : '<div class="empty"><div class="empty-icon">📊</div><p>Nenhuma venda registrada</p></div>';
+}
+
+// ============ EXPORT CSV ============
+function exportCSV() {
+  const rows = [['Referência','Descrição','Grupo','Preço','Status','Cliente','Data Venda','Pagamento']];
+  state.produtos.forEach(p => {
+    const venda = state.vendas.find(v => v.itens.find(i => i.id === p.id));
+    rows.push([
+      p.ref, p.desc, p.grupo, p.preco,
+      p.vendido ? 'Vendido' : 'Disponível',
+      venda && venda.cliente ? venda.cliente.nome : '',
+      venda ? new Date(venda.data).toLocaleString('pt-BR') : '',
+      venda ? venda.pagamento : '',
+    ]);
+  });
+  const csv = rows.map(r => r.map(c => `"${c}"`).join(',')).join('\n');
+  const blob = new Blob([csv], {type:'text/csv;charset=utf-8;'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = 'fressen_relatorio.csv'; a.click();
+  toast('CSV exportado!');
+}
+
+function compartilharRelatorio() {
+  const vendidos = state.produtos.filter(p => p.vendido);
+  const total = state.vendas.reduce((a,v) => a + v.total, 0);
+  const texto = `📊 Relatório Fressen Joias\n\nVendas: ${fmt(total)}\nPeças vendidas: ${vendidos.length}\nEstoque restante: ${state.produtos.filter(p=>!p.vendido).length} peças\n\nGerado em: ${new Date().toLocaleString('pt-BR')}`;
+  if (navigator.share) {
+    navigator.share({ title: 'Relatório Fressen', text: texto });
+  } else {
+    navigator.clipboard.writeText(texto).then(() => toast('Relatório copiado!'));
+  }
+}
+
+// ============ CONFIG ============
+function toggleConfig() {
+  const s = document.getElementById('config-section');
+  s.style.display = s.style.display === 'none' || !s.style.display ? 'block' : 'none';
+  if (s.style.display === 'block') document.getElementById('cfg-email-consultora').value = state.configEmailConsultora;
+}
+function saveConfig() {
+  state.configEmailConsultora = document.getElementById('cfg-email-consultora').value;
+  save();
+  toast('Configurações salvas!');
+  toggleConfig();
+}
+
+// ============ MODAL HELPERS ============
+function openModal(id) { document.getElementById(id).classList.add('open'); }
+function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+document.querySelectorAll('.modal-bg').forEach(m => {
+  m.addEventListener('click', e => { if (e.target === m) m.classList.remove('open'); });
+});
+
+// ============ TOAST ============
+function toast(msg) {
+  const t = document.createElement('div');
+  t.className = 'toast';
+  t.textContent = msg;
+  document.body.appendChild(t);
+  setTimeout(() => t.remove(), 2500);
+}
+
+// ============ RENDER INICIAL ============
+renderEstoque();
+renderClientes();
+populateClienteSelect();
+</script>
+</body>
+</html>
