@@ -2277,7 +2277,9 @@ function atualizarFechResumo() {
   const fdP=document.getElementById('fech-data-prev'); if(fdP)fdP.textContent=fmt_date(S.maleta.dataPrevisao)||'—';
   const fdA=document.getElementById('fech-data-acerto');if(fdA)fdA.textContent=fmt_date(S.maleta.dataAcerto)||'—';
   const total=S.produtos.length,vend=S.produtos.filter(p=>p.vendido).length,disp=total-vend;
-  const vlVend=S.vendas.reduce((a,v)=>a+v.total,0),vlDisp=S.produtos.filter(p=>!p.vendido).reduce((a,p)=>a+p.preco,0);
+  const numM=S.maleta.numero||'';
+  const vendasMaleta = numM ? S.vendas.filter(v=>String(v.numMaleta||'')===String(numM)) : S.vendas;
+  const vlVend=vendasMaleta.reduce((a,v)=>a+v.total,0),vlDisp=S.produtos.filter(p=>!p.vendido).reduce((a,p)=>a+p.preco,0);
   const el=document.getElementById('fech-resumo');if(!el)return;
   el.innerHTML=`<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px"><div><div style="font-size:10px;color:var(--text2)">Peças vendidas</div><div style="font-weight:700;color:var(--success)">${vend} de ${total}</div></div><div><div style="font-size:10px;color:var(--text2)">Total vendido</div><div style="font-weight:700;color:var(--rosa-dark)">${fmt(vlVend)}</div></div><div><div style="font-size:10px;color:var(--text2)">A devolver</div><div style="font-weight:700">${disp} peças</div></div><div><div style="font-size:10px;color:var(--text2)">Valor a devolver</div><div style="font-weight:700">${fmt(vlDisp)}</div></div></div>`;
 }
@@ -2340,7 +2342,7 @@ function renderFinanceiro() {
       const maxVal = Math.max(...entradasMes.map(([,d])=>d.val), 1);
       fluxoEl.innerHTML = `
         <div class="card" style="margin-bottom:10px">
-          <div class="card-title">📅 Previsão por Mês</div>
+          <div class="card-title">📅 Previsão a receber por Mês</div>
           ${entradasMes.map(([mes,d])=>`
             <div style="margin-bottom:8px">
               <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:3px">
