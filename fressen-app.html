@@ -66,7 +66,7 @@
   .stats-row{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px}
   .stat-card{background:var(--surface2);border-radius:var(--radius-sm);padding:10px}
   .stat-label{font-size:10px;color:var(--text2);font-weight:600;letter-spacing:0.4px;text-transform:uppercase}
-  .stat-val{font-size:20px;font-weight:700;color:var(--black);margin-top:2px}
+  .stat-val{font-size:20px;font-weight:700;color:#2D1A10;margin-top:2px}
   .stat-val.gold{color:var(--gold-dark)}
 
   /* BUTTONS */
@@ -123,7 +123,7 @@
   .tag-info{background:rgba(26,92,156,0.12);color:var(--info)}
 
   /* TOAST */
-  .toast{position:fixed;bottom:28px;left:50%;transform:translateX(-50%);background:var(--black);color:var(--gold);padding:9px 18px;border-radius:24px;font-size:13px;font-weight:600;z-index:9999;white-space:nowrap;animation:toastIn 0.3s ease;box-shadow:0 4px 16px rgba(0,0,0,0.3)}
+  .toast{position:fixed;bottom:28px;left:50%;transform:translateX(-50%);background:#2D1A10;color:#fff;padding:9px 18px;border-radius:24px;font-size:13px;font-weight:600;z-index:9999;white-space:nowrap;animation:toastIn 0.3s ease;box-shadow:0 4px 16px rgba(0,0,0,0.3)}
   @keyframes toastIn{from{opacity:0;transform:translateX(-50%) translateY(10px)}}
 
   /* MODAL */
@@ -347,20 +347,7 @@
   <div class="section-title">Nova Venda</div>
 
   <div class="card">
-    <div class="card-title">Escanear Código</div>
-    <button class="btn btn-dark" id="btn-scan" onclick="toggleScanner()">
-      <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="8" height="8"/><rect x="14" y="2" width="8" height="8"/><rect x="2" y="14" width="8" height="8"/><path d="M14 14h2v2h-2zm4 0h2v2h-2zm-4 4h2v2h-2zm4 0h2v2h-2z"/></svg>
-      Escanear Peça
-    </button>
-    <div id="scanner-container" style="margin-top:8px">
-      <div class="scan-frame"></div>
-      <div class="scan-overlay"><div class="scan-line"></div></div>
-    </div>
-    <div id="scan-result" style="margin-top:6px;font-size:13px;color:var(--text2);text-align:center"></div>
-  </div>
-
-  <div class="card">
-    <div class="card-title">Busca Manual</div>
+    <div class="card-title">Buscar Peça</div>
     <div class="search-wrap" style="margin-bottom:0">
       <span class="search-icon">🔍</span>
       <input type="text" id="search-vender" placeholder="Referência ou nome da peça..." oninput="renderVenderBusca()">
@@ -455,7 +442,7 @@
   <div class="stats-row">
     <div class="stat-card"><div class="stat-label">Saldo Inicial</div><div class="stat-val gold" id="rel-inicial">R$ 0</div></div>
     <div class="stat-card"><div class="stat-label">Total Vendido</div><div class="stat-val gold" id="rel-vendido">R$ 0</div></div>
-    <div class="stat-card"><div class="stat-label">Restante Estoque</div><div class="stat-val" id="rel-disp-qtd">0</div></div>
+    <div class="stat-card"><div class="stat-label">Restante Estoque</div><div class="stat-val" style="color:#2D1A10" id="rel-disp-qtd">0</div></div>
     <div class="stat-card"><div class="stat-label">Projeção Saldo Final</div><div class="stat-val gold" id="rel-projecao">R$ 0</div></div>
   </div>
   <div class="card">
@@ -497,7 +484,7 @@
 
   <!-- Filtros -->
   <div style="display:flex;gap:6px;margin-bottom:8px">
-    <button class="tag" id="fin-tab-pendente" onclick="finTab('pendente')" style="cursor:pointer;flex:1;justify-content:center;background:var(--gold);color:#000">Pendentes</button>
+    <button class="tag" id="fin-tab-pendente" onclick="finTab('pendente')" style="cursor:pointer;flex:1;justify-content:center;background:var(--rosa);color:#fff">Pendentes</button>
     <button class="tag" id="fin-tab-pago"     onclick="finTab('pago')"     style="cursor:pointer;flex:1;justify-content:center;background:var(--surface2);color:var(--text2)">Pagos</button>
     <button class="tag" id="fin-tab-todos"    onclick="finTab('todos')"    style="cursor:pointer;flex:1;justify-content:center;background:var(--surface2);color:var(--text2)">Todos</button>
   </div>
@@ -511,7 +498,7 @@
 
   <!-- Tabs -->
   <div style="display:flex;gap:6px;margin-bottom:10px">
-    <button class="tag" id="rel-tab-dash"  onclick="relTab('dash')"  style="cursor:pointer;flex:1;justify-content:center;background:var(--gold);color:#000;font-size:12px">📊 Dashboard</button>
+    <button class="tag" id="rel-tab-dash"  onclick="relTab('dash')"  style="cursor:pointer;flex:1;justify-content:center;background:var(--rosa);color:#fff;font-size:12px">📊 Dashboard</button>
     <button class="tag" id="rel-tab-fech"  onclick="relTab('fech')"  style="cursor:pointer;flex:1;justify-content:center;background:var(--surface2);color:var(--text2);font-size:12px">🔒 Fechamento</button>
   </div>
 
@@ -520,7 +507,7 @@
     <div class="stats-row">
       <div class="stat-card"><div class="stat-label">Saldo Inicial</div><div class="stat-val gold" id="rel-inicial">R$ 0</div></div>
       <div class="stat-card"><div class="stat-label">Total Vendido</div><div class="stat-val gold" id="rel-vendido">R$ 0</div></div>
-      <div class="stat-card"><div class="stat-label">Restante</div><div class="stat-val" id="rel-disp-qtd">0 pç</div></div>
+      <div class="stat-card"><div class="stat-label">Restante</div><div class="stat-val" style="color:#2D1A10" id="rel-disp-qtd">0 pç</div></div>
       <div class="stat-card"><div class="stat-label">% Vendido</div><div class="stat-val gold" id="rel-pct-val">0%</div></div>
     </div>
 
@@ -636,12 +623,12 @@
 <script>
 // ============ STATE ============
 let S = {
-  produtos: [], vendas: [], clientes: [], cart: [],
+  produtos: [], vendas: [], clientes: [], areceber: [], cart: [],
   paySelected: {}, // { metodo: valor }
   scannerActive: false,
   currentModalItem: null,
   currentModalCliente: null,
-  apiUrl: 'https://script.google.com/macros/s/AKfycbwlfvcCiBLe_ZXA-iudbZ19hVsk0601bNKX9BspgOE_r1r7JVf7EnH8AHyB4ZatQo6Gig/exec',
+  apiUrl: 'https://script.google.com/macros/s/AKfycby_N_PMKDxTkw_VA3ATixlcAHa086nhFgvCYhFFiS0_xPnOWmXGW8BEnXR_5NBg-S3hHQ/exec',
   maleta: { numero:'', consultora:'', ciclo:'', dataInicio:'', dataAcerto:'' },
 };
 
@@ -867,22 +854,63 @@ async function carregarDoSheets(silencioso) {
     });
   }
   if (res.vendas) {
-    S.vendas = res.vendas.map(function(v) {
-      return {
-        id:       String(v.id_venda),
-        data:     v.data_venda,
-        cliente:  v.cliente,
-        total:    Number(v.preco) || 0,
-        itens:    [{ ref: v.ref, grupo: v.grupo, desc: v.descricao, preco: Number(v.preco) || 0 }],
-        pagamentos: {},
-        obs:      v.observacao || '',
-      };
+    // Agrupa por id_venda (cada linha = 1 item da venda)
+    const vendaMap = {};
+    res.vendas.forEach(function(v) {
+      const vid = String(v.id_venda);
+      if (!vendaMap[vid]) {
+        // Reconstrói pagamentos a partir da string "Pix: R$89.00 | Crédito: R$50.00"
+        const pagamentos = {};
+        const pagamentoStr = v.forma_pagamento || '';
+        pagamentoStr.split(' | ').forEach(function(part) {
+          const m = /^(.+):\s*R\$\s*([\d.]+)$/.exec(part.trim());
+          if (m) pagamentos[m[1].trim()] = parseFloat(m[2]);
+        });
+        // cliente pode ser string ou objeto
+        const nomeCliente = typeof v.cliente === 'object' ? (v.cliente?.nome || '') : (v.cliente || '');
+        const clienteObj = nomeCliente ? { nome: nomeCliente, id: '' } : null;
+        vendaMap[vid] = {
+          id:           vid,
+          data:         v.data_venda,
+          cliente:      clienteObj,
+          total:        0,
+          itens:        [],
+          pagamentos:   pagamentos,
+          pagamentoStr: pagamentoStr,
+          obs:          v.observacao || '',
+          parcelas:     null,
+        };
+      }
+      const preco = Number(v.preco) || 0;
+      vendaMap[vid].itens.push({ ref: v.ref, grupo: v.grupo, desc: v.descricao, preco });
+      vendaMap[vid].total += preco;
     });
+    S.vendas = Object.values(vendaMap);
   }
   if (res.clientes) {
     S.clientes = res.clientes.map(function(c) {
       return { id: String(c.id), nome: c.nome, tel: c.telefone, email: c.email || '', nasc: c.nascimento || '' };
     });
+  }
+
+  if (res.areceber) {
+    S.areceber = res.areceber.map(function(r) {
+      return {
+        vendaId:       String(r.id_venda       || ''),
+        dataVenda:     String(r.data_venda      || ''),
+        cliente:       String(r.cliente         || ''),
+        celular:       String(r.celular         || ''),
+        maleta:        String(r.maleta          || ''),
+        valorVenda:    Number(r.valor_venda)    || 0,
+        numParcela:    Number(r.num_parcela)    || 1,
+        totalParcelas: Number(r.total_parcelas) || 1,
+        valorParcela:  Number(r.valor_parcela)  || 0,
+        dataPagamento: String(r.data_pagamento  || ''),
+        status:        String(r.status          || 'Pendente'),
+      };
+    });
+  } else {
+    S.areceber = [];
   }
 
   updateStats(); renderMaletaCard(); renderEstoque(); renderClientes(); populateClienteSelect();
@@ -1893,7 +1921,7 @@ async function salvarCliente() {
     const idx = S.clientes.findIndex(x=>x.id===idEdit);
     if (idx >= 0) {
       S.clientes[idx] = { ...S.clientes[idx], nome, tel, email, nasc };
-      await sheetsPost({ action: 'addCliente', cliente: { ID: idEdit, Nome: nome, Telefone: tel, Email: email, DataNascimento: nasc } });
+      await sheetsPost({ action: 'updateCliente', id: idEdit, nome, telefone: tel, email, nascimento: nasc });
       toast(`✅ ${nome} atualizado!`);
     }
   } else {
@@ -1947,8 +1975,8 @@ function relTab(tab) {
   document.getElementById('rel-fech').style.display  = tab==='fech' ? 'block' : 'none';
   ['dash','fech'].forEach(t=>{
     const btn = document.getElementById('rel-tab-'+t);
-    btn.style.background = t===tab ? 'var(--gold)' : 'var(--surface2)';
-    btn.style.color      = t===tab ? '#000' : 'var(--text2)';
+    btn.style.background = t===tab ? 'var(--rosa)' : 'var(--surface2)';
+    btn.style.color      = t===tab ? '#fff' : 'var(--text2)';
   });
   if (tab==='fech') atualizarFechResumo();
 }
@@ -1992,88 +2020,58 @@ function finTab(tab) {
   _finTab = tab;
   ['pendente','pago','todos'].forEach(t=>{
     const btn = document.getElementById('fin-tab-'+t);
-    btn.style.background = t===tab ? 'var(--gold)' : 'var(--surface2)';
-    btn.style.color      = t===tab ? '#000' : 'var(--text2)';
+    btn.style.background = t===tab ? 'var(--rosa)' : 'var(--surface2)';
+    btn.style.color      = t===tab ? '#fff' : 'var(--text2)';
   });
   renderFinanceiro();
 }
 
-function gerarParcelas(venda) {
-  // Retorna array de parcelas a partir dos dados de parcelamento da venda
-  if (!venda.parcelas || venda.parcelas.qtd <= 1) return [];
-  const parcelas = [];
-  const base = new Date(venda.data);
-  const vlParc = venda.parcelas.valorTotal / venda.parcelas.qtd;
-  for (let i = 1; i <= venda.parcelas.qtd; i++) {
-    const dt = new Date(base);
-    dt.setDate(dt.getDate() + venda.parcelas.dias * i);
-    const pagoFlag = venda.parcelas.pagas && venda.parcelas.pagas.includes(i);
-    parcelas.push({ num: i, total: venda.parcelas.qtd, valor: vlParc, vencimento: dt, pago: pagoFlag, vendaId: venda.id, cliente: venda.cliente });
-  }
-  return parcelas;
-}
-
 function renderFinanceiro() {
+  // Fonte única: S.areceber (vem do Sheets, aba "A receber")
   const hoje = new Date(); hoje.setHours(0,0,0,0);
-  // Coleta todas as parcelas de todas as vendas
-  let todasParcelas = [];
-  S.vendas.forEach(v => {
-    const parc = gerarParcelas(v);
-    todasParcelas = todasParcelas.concat(parc);
-  });
+  const todas = S.areceber;
 
-  // Também inclui vendas à vista de Carteira/Crédito sem parcelamento como "parcela 1/1"
-  S.vendas.forEach(v => {
-    const temCredCart = Object.keys(v.pagamentos||{}).some(m=>m==='Crédito'||m==='Carteira');
-    if (temCredCart && (!v.parcelas || v.parcelas.qtd <= 1)) {
-      const dt = new Date(v.data);
-      todasParcelas.push({
-        num:1, total:1, valor: v.total, vencimento: dt,
-        pago: v.parcelas?.pagas?.includes(1) || false,
-        vendaId: v.id, cliente: v.cliente
-      });
-    }
-  });
+  let lista = [...todas];
+  if (_finTab === 'pendente') lista = lista.filter(p => p.status !== 'Pago');
+  if (_finTab === 'pago')     lista = lista.filter(p => p.status === 'Pago');
 
-  // Filtro
-  let lista = todasParcelas;
-  if (_finTab === 'pendente') lista = lista.filter(p => !p.pago);
-  if (_finTab === 'pago')     lista = lista.filter(p =>  p.pago);
-
-  // Ordena por vencimento
-  lista.sort((a,b) => a.vencimento - b.vencimento);
+  // Ordena por data de vencimento (dataVenda + parcela * intervalo não temos, usa dataVenda)
+  lista.sort((a,b) => new Date(a.dataVenda) - new Date(b.dataVenda));
 
   // Totalizadores
-  const aReceber = todasParcelas.filter(p=>!p.pago).reduce((a,p)=>a+p.valor,0);
-  const recebido  = todasParcelas.filter(p=>p.pago).reduce((a,p)=>a+p.valor,0);
-  const vencidas  = todasParcelas.filter(p=>!p.pago && p.vencimento < hoje).length;
-  document.getElementById('fin-receber').textContent = fmt(aReceber);
-  document.getElementById('fin-recebido').textContent = fmt(recebido);
-  document.getElementById('fin-vencidas').textContent = vencidas;
+  const aRec   = todas.filter(p=>p.status!=='Pago').reduce((a,p)=>a+p.valorParcela,0);
+  const receb  = todas.filter(p=>p.status==='Pago').reduce((a,p)=>a+p.valorParcela,0);
+  const venc   = todas.filter(p=>p.status!=='Pago' && p.dataPagamento && new Date(p.dataPagamento) < hoje).length;
+  document.getElementById('fin-receber').textContent  = fmt(aRec);
+  document.getElementById('fin-recebido').textContent = fmt(receb);
+  document.getElementById('fin-vencidas').textContent = venc;
 
   const el = document.getElementById('fin-lista');
   if (!lista.length) {
-    el.innerHTML = '<div class="empty"><div class="empty-icon">💳</div><p>Nenhuma parcela encontrada</p></div>';
+    el.innerHTML = '<div class="empty"><div class="empty-icon">💳</div><p>Nenhuma parcela registrada no Sheets.<br><small>Registre uma venda parcelada para aparecer aqui.</small></p></div>';
     return;
   }
 
   el.innerHTML = lista.map(p => {
-    const venc = new Date(p.vencimento);
-    const vencoStr = venc.toLocaleDateString('pt-BR');
-    const atrasada = !p.pago && venc < hoje;
-    const nomeCli = p.cliente?.nome || 'Sem cliente';
+    const pago     = p.status === 'Pago';
+    const cor      = pago ? 'var(--success)' : 'var(--rosa)';
     return `
-      <div class="card" style="margin-bottom:7px;border-left:3px solid ${atrasada?'var(--danger)':p.pago?'var(--success)':'var(--gold)'}">
+      <div class="card" style="margin-bottom:7px;border-left:3px solid ${cor}">
         <div style="display:flex;justify-content:space-between;align-items:center">
-          <div>
-            <div style="font-size:13px;font-weight:600">${nomeCli}</div>
-            <div style="font-size:11px;color:var(--text2)">Parcela ${p.num}/${p.total} · Venc: ${vencoStr}</div>
-            ${atrasada?'<div style="font-size:10px;color:var(--danger);font-weight:600">⚠️ VENCIDA</div>':''}
+          <div style="flex:1;min-width:0">
+            <div style="font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${p.cliente || 'Sem cliente'}</div>
+            <div style="font-size:11px;color:var(--text2)">${p.celular ? p.celular+' · ':''} Maleta ${p.maleta||'—'}</div>
+            <div style="font-size:11px;color:var(--text2)">Parcela ${p.numParcela}/${p.totalParcelas} · Venda: ${p.dataVenda}</div>
+            ${pago && p.dataPagamento ? `<div style="font-size:10px;color:var(--success);font-weight:600">✅ Pago em ${p.dataPagamento}</div>` : ''}
           </div>
-          <div style="text-align:right">
-            <div style="font-size:14px;font-weight:700;color:var(--gold-dark)">${fmt(p.valor)}</div>
-            <button onclick="toggleParcela('${p.vendaId}',${p.num})" style="font-size:11px;padding:3px 8px;border-radius:4px;border:1px solid ${p.pago?'var(--success)':'var(--gold)'};background:${p.pago?'rgba(30,126,52,0.1)':'rgba(201,168,76,0.1)'};color:${p.pago?'var(--success)':'var(--gold-dark)'};cursor:pointer;margin-top:3px">
-              ${p.pago?'✅ Pago':'Marcar Pago'}
+          <div style="text-align:right;margin-left:8px">
+            <div style="font-size:14px;font-weight:700;color:var(--rosa-dark)">${fmt(p.valorParcela)}</div>
+            <button onclick="toggleParcela('${p.vendaId}',${p.numParcela})"
+              style="font-size:11px;padding:3px 8px;border-radius:4px;margin-top:3px;cursor:pointer;
+              border:1px solid ${pago?'var(--success)':'var(--rosa)'};
+              background:${pago?'rgba(30,126,52,0.1)':'rgba(241,183,156,0.15)'};
+              color:${pago?'var(--success)':'var(--rosa-dark)'}">
+              ${pago ? '✅ Pago' : 'Marcar Pago'}
             </button>
           </div>
         </div>
@@ -2082,15 +2080,37 @@ function renderFinanceiro() {
 }
 
 function toggleParcela(vendaId, num) {
-  const v = S.vendas.find(x=>x.id===vendaId);
-  if (!v) return;
-  if (!v.parcelas) v.parcelas = { qtd:1, dias:30, valorTotal:v.total, pagas:[] };
-  if (!v.parcelas.pagas) v.parcelas.pagas = [];
-  const idx = v.parcelas.pagas.indexOf(num);
-  if (idx>=0) v.parcelas.pagas.splice(idx,1);
-  else v.parcelas.pagas.push(num);
+  // Busca a parcela em S.areceber
+  const idx = S.areceber.findIndex(p => p.vendaId === String(vendaId) && p.numParcela === num);
+  if (idx < 0) return;
+  const p   = S.areceber[idx];
+  const pago = p.status !== 'Pago';  // inverte
+  const dataPagamento = pago ? new Date().toLocaleString('pt-BR') : '';
+
+  // Atualiza local
+  S.areceber[idx].status        = pago ? 'Pago' : 'Pendente';
+  S.areceber[idx].dataPagamento = dataPagamento;
+
+  // Salva no Sheets
+  sheetsPost({
+    action: 'salvarParcela',
+    parcela: {
+      VendaId:        vendaId,
+      DataVenda:      p.dataVenda,
+      Cliente:        p.cliente,
+      Celular:        p.celular,
+      Maleta:         p.maleta,
+      ValorVenda:     p.valorVenda,
+      NumParcela:     num,
+      TotalParcelas:  p.totalParcelas,
+      ValorParcela:   p.valorParcela,
+      DataPagamento:  dataPagamento,
+      Status:         pago ? 'Pago' : 'Pendente',
+    }
+  });
+
   renderFinanceiro();
-  toast(idx>=0 ? 'Marcado como pendente' : '✅ Parcela marcada como paga!');
+  toast(pago ? '✅ Parcela marcada como paga!' : 'Marcado como pendente');
 }
 
 // ============ DASHBOARD — por data, top itens, por cliente ============
@@ -2234,6 +2254,29 @@ async function finalizarVenda(){
   document.getElementById('parcelas-wrap').style.display='none';
   save(); updateStats(); updateCartUI(); renderMaletaCard();
   pushVendaSheets(venda, cliente);
+  // Grava parcelas no Sheets se parcelado
+  if (parcelasInfo && parcelasInfo.qtd > 0) {
+    for (let pi = 1; pi <= parcelasInfo.qtd; pi++) {
+      const dtBase = new Date(venda.data);
+      dtBase.setDate(dtBase.getDate() + parcelasInfo.dias * pi);
+      sheetsPost({
+        action: 'salvarParcela',
+        parcela: {
+          VendaId:       venda.id,
+          DataVenda:     new Date(venda.data).toLocaleString('pt-BR'),
+          Cliente:       cliente ? cliente.nome : '',
+          Celular:       cliente ? (cliente.tel||'') : '',
+          Maleta:        S.maleta.numero || '',
+          ValorVenda:    venda.total,
+          NumParcela:    pi,
+          TotalParcelas: parcelasInfo.qtd,
+          ValorParcela:  parcelasInfo.valorTotal / parcelasInfo.qtd,
+          DataPagamento: '',
+          Status:        'Pendente',
+        }
+      });
+    }
+  }
 
   const det=document.getElementById('modal-venda-detalhes');
   det.innerHTML=`
@@ -2256,7 +2299,7 @@ function showPage(p) {
   document.getElementById('page-'+p).classList.add('active');
   document.getElementById('nav-'+p).classList.add('active');
   if (p==='relatorio') { updateRelatorio(); relTab('dash'); }
-  if (p==='financeiro') { renderFinanceiro(); }
+  if (p==='financeiro') { carregarDoSheets(true).then(()=>renderFinanceiro()); }
   if (p==='estoque') renderEstoque();
   if (p==='clientes') { renderClientes(); populateClienteSelect(); }
   if (p==='vender') { populateClienteSelect(); renderVenderBusca(); }
