@@ -50,12 +50,12 @@
   .maleta-card{background:linear-gradient(135deg,#F1B79C,#E89070);border-radius:var(--radius);padding:14px 16px;margin-bottom:10px;display:flex;align-items:center;gap:12px}
   .maleta-icon{font-size:28px;line-height:1}
   .maleta-info{flex:1}
-  .maleta-label{font-size:10px;color:rgba(255,255,255,0.8);font-weight:600;letter-spacing:1px;text-transform:uppercase}
-  .maleta-num{font-size:28px;font-weight:800;color:var(--gold);line-height:1.1}
-  .maleta-meta{font-size:11px;color:rgba(255,255,255,0.5);margin-top:2px}
+  .maleta-label{font-size:10px;color:#fff;font-weight:600;letter-spacing:1px;text-transform:uppercase}
+  .maleta-num{font-size:28px;font-weight:800;color:#7B2D00;line-height:1.1}
+  .maleta-meta{font-size:11px;color:#fff;margin-top:2px}
   .maleta-right{text-align:right}
-  .maleta-ciclo{font-size:10px;color:rgba(201,168,76,0.6);text-transform:uppercase;letter-spacing:1px}
-  .maleta-ciclo-val{font-size:13px;color:rgba(255,255,255,0.8);font-weight:600}
+  .maleta-ciclo{font-size:10px;color:rgba(255,255,255,0.85);text-transform:uppercase;letter-spacing:1px;font-weight:600}
+  .maleta-ciclo-val{font-size:13px;color:#fff;font-weight:700}
 
   /* CONDICIONAL INFO */
   .cond-row{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px}
@@ -409,6 +409,47 @@ document.addEventListener('DOMContentLoaded', function() {
     <div id="vender-busca-list" style="max-height:180px;overflow-y:auto"></div>
   </div>
 
+  <!-- Peça Própria -->
+  <div class="card" style="border:1.5px dashed var(--rosa)">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+      <div class="card-title" style="margin:0">💎 Adicionar Peça Própria</div>
+      <span style="font-size:10px;color:var(--text2)">Não está no estoque</span>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px">
+      <div>
+        <label style="font-size:11px;color:var(--text2);font-weight:600">Descrição *</label>
+        <input type="text" id="proprio-desc" placeholder="Ex: Anel banhado ouro" style="font-size:13px">
+      </div>
+      <div>
+        <label style="font-size:11px;color:var(--text2);font-weight:600">Grupo</label>
+        <select id="proprio-grupo" style="font-size:13px">
+          <option value="ANEL">ANEL</option>
+          <option value="BRINCO">BRINCO</option>
+          <option value="COLAR">COLAR</option>
+          <option value="PULSEIRA">PULSEIRA</option>
+          <option value="BRACELETE">BRACELETE</option>
+          <option value="CHOKER">CHOKER</option>
+          <option value="CORRENTE">CORRENTE</option>
+          <option value="CONJUNTO">CONJUNTO</option>
+          <option value="OUTRO">OUTRO</option>
+        </select>
+      </div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px">
+      <div>
+        <label style="font-size:11px;color:var(--text2);font-weight:600">Valor (R$) *</label>
+        <input type="number" id="proprio-valor" placeholder="0,00" min="0" step="0.01" style="font-size:14px">
+      </div>
+      <div>
+        <label style="font-size:11px;color:var(--text2);font-weight:600">Referência</label>
+        <input type="text" id="proprio-ref" placeholder="Opcional" style="font-size:13px">
+      </div>
+    </div>
+    <button class="btn btn-outline" onclick="adicionarPecaPropria()" style="font-size:13px;border-color:var(--rosa);color:var(--rosa-dark)">
+      + Adicionar ao Carrinho
+    </button>
+  </div>
+
   <div class="card">
     <div class="card-title">Carrinho</div>
     <div id="cart-list"><div class="empty"><div class="empty-icon">🛍️</div><p>Nenhuma peça adicionada</p></div></div>
@@ -603,6 +644,21 @@ document.addEventListener('DOMContentLoaded', function() {
 </div>
 
 <!-- ===== MODAIS ===== -->
+<!-- Modal Reprogramar Parcela -->
+<div class="modal-bg" id="modal-reprogramar">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-title">📅 Reprogramar Vencimento</div>
+    <p style="font-size:12px;color:var(--text2);margin-bottom:12px" id="reprog-info">Parcela atual</p>
+    <div class="field">
+      <label>Nova Data de Vencimento</label>
+      <input type="date" id="reprog-data" style="font-size:15px">
+    </div>
+    <button class="btn btn-gold" onclick="confirmarReprogramacao()" style="margin-bottom:7px">Confirmar Nova Data</button>
+    <button class="btn btn-outline" onclick="closeModal('modal-reprogramar')">Cancelar</button>
+  </div>
+</div>
+
 <!-- Modal Aniversário -->
 <div class="modal-bg" id="modal-aniversario">
   <div class="modal">
@@ -766,8 +822,8 @@ function renderMaletaCard() {
       <div class="maleta-info">
         <div class="maleta-label">Maleta Nº</div>
         <div class="maleta-num">${m.numero || '—'}</div>
-        <div class="maleta-meta" style="color:rgba(255,255,255,0.8);font-size:12px;margin-top:2px">${m.consultora || ''}</div>
-        ${m.executiva ? `<div style="font-size:10px;color:rgba(201,168,76,0.7);margin-top:2px">Exec: ${m.executiva}</div>` : ''}
+        <div class="maleta-meta" style="color:#fff;font-size:12px;margin-top:2px">${m.consultora || ''}</div>
+        ${m.executiva ? `<div style="font-size:10px;color:rgba(255,255,255,0.9);margin-top:2px">Exec: ${m.executiva}</div>` : ''}
       </div>
       <div class="maleta-right" style="text-align:right">
         ${m.condicional ? `<div class="maleta-ciclo">Condicional</div><div class="maleta-ciclo-val" style="font-size:11px">${m.condicional}</div>` : ''}
@@ -2167,7 +2223,34 @@ function renderFinanceiro() {
   safe('fin-receber',fmt(aRec));safe('fin-recebido',fmt(receb));safe('fin-vencidas',venc);
   const el=document.getElementById('fin-lista');if(!el)return;
   if(!lista.length){el.innerHTML='<div class="empty"><div class="empty-icon">💳</div><p>Nenhuma parcela encontrada</p></div>';return;}
-  el.innerHTML=lista.map(p=>{const pago=p.status==='Pago',dtV=new Date(p.dataVenda),atras=!pago&&dtV<hoje,cor=atras?'var(--danger)':pago?'var(--success)':'var(--rosa)';return `<div class="card" style="margin-bottom:7px;border-left:3px solid ${cor}"><div style="display:flex;justify-content:space-between;align-items:center"><div style="flex:1;min-width:0"><div style="font-size:13px;font-weight:600">${p.cliente||'Sem cliente'}</div><div style="font-size:11px;color:var(--text2)">Maleta ${p.maleta||'—'}</div><div style="font-size:11px;color:var(--text2)">Parcela ${p.numParcela}/${p.totalParcelas} · ${p.dataVenda}</div>${atras?'<div style="font-size:10px;color:var(--danger);font-weight:600">⚠️ VENCIDA</div>':''}${pago&&p.dataPagamento?`<div style="font-size:10px;color:var(--success)">✅ Pago em ${p.dataPagamento}</div>`:''}</div><div style="text-align:right;margin-left:8px"><div style="font-size:14px;font-weight:700;color:var(--rosa-dark)">${fmt(p.valorParcela)}</div><button onclick="toggleParcela('${p.vendaId}',${p.numParcela})" style="font-size:11px;padding:3px 8px;border-radius:4px;margin-top:3px;cursor:pointer;border:1px solid ${pago?'var(--success)':'var(--rosa)'};background:${pago?'rgba(30,126,52,0.1)':'rgba(241,183,156,0.15)'};color:${pago?'var(--success)':'var(--rosa-dark)'}">${pago?'✅ Pago':'Marcar Pago'}</button></div></div></div>`;}).join('');
+  el.innerHTML=lista.map(p=>{
+    const pago=p.status==='Pago', dtV=new Date(p.dataVenda), atras=!pago&&dtV<hoje;
+    const cor=atras?'var(--danger)':pago?'var(--success)':'var(--rosa)';
+    const btnStyle='font-size:10px;padding:3px 7px;border-radius:4px;cursor:pointer;border:none;font-weight:600;margin-top:3px;';
+    return `<div class="card" style="margin-bottom:7px;border-left:3px solid ${cor}">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start">
+        <div style="flex:1;min-width:0">
+          <div style="font-size:13px;font-weight:600">${p.cliente||'Sem cliente'}</div>
+          <div style="font-size:11px;color:var(--text2)">${p.celular?p.celular+' · ':''}Maleta ${p.maleta||'—'}</div>
+          <div style="font-size:11px;color:var(--text2)">Parcela ${p.numParcela}/${p.totalParcelas} · Vencimento: <strong>${p.dataVenda}</strong></div>
+          ${atras?'<div style="font-size:10px;color:var(--danger);font-weight:600">⚠️ VENCIDA</div>':''}
+          ${pago&&p.dataPagamento?`<div style="font-size:10px;color:var(--success);font-weight:600">✅ Pago em ${p.dataPagamento}</div>`:''}
+        </div>
+        <div style="text-align:right;margin-left:8px;min-width:80px">
+          <div style="font-size:14px;font-weight:700;color:var(--rosa-dark)">${fmt(p.valorParcela)}</div>
+          ${!pago?`
+          <button onclick="toggleParcela('${p.vendaId}',${p.numParcela})"
+            style="${btnStyle}background:rgba(30,126,52,0.12);color:var(--success)">✅ Pago</button>
+          <button onclick="reprogramarParcela('${p.vendaId}',${p.numParcela})"
+            style="${btnStyle}background:rgba(241,183,156,0.2);color:var(--rosa-dark)">📅 Prazo</button>
+          <button onclick="cobrarCliente('${p.vendaId}',${p.numParcela})"
+            style="${btnStyle}background:rgba(37,211,102,0.12);color:#128C7E">💬 Cobrar</button>
+          `:`<button onclick="toggleParcela('${p.vendaId}',${p.numParcela})"
+            style="${btnStyle}background:rgba(201,168,76,0.1);color:var(--text2)">↩ Desfazer</button>`}
+        </div>
+      </div>
+    </div>`;
+  }).join('');
 }
 
 function toggleParcela(vendaId,num) {
@@ -2313,6 +2396,7 @@ async function finalizarVenda() {
   };
 
   venda.itens.forEach(item=>{
+    if (item.proprio) return; // peça própria — não está no estoque
     const p=S.produtos.find(x=>x.id===item.id);
     if(p){p.vendido=true;p.dataVenda=new Date().toISOString();p.clienteVenda=cliente?cliente.nome:'';}
   });
@@ -2364,7 +2448,9 @@ async function pushVendaSheets(venda, cliente) {
       FormaPagamento:pagStr,
       Observacao:    venda.obs||'',
     }});
-    await sheetsPost({action:'marcarVendido',ref:item.ref,numMaleta:S.maleta.numero||'',dataVenda:dataFmt,clienteNome:cliente?cliente.nome:''});
+    if (!item.proprio) {
+      await sheetsPost({action:'marcarVendido',ref:item.ref,numMaleta:S.maleta.numero||'',dataVenda:dataFmt,clienteNome:cliente?cliente.nome:''});
+    }
   }
 }
 
@@ -2656,6 +2742,140 @@ Pamela — Consultora Fressen Joias 💍`;
   document.getElementById('aniv-modal-whats').href =
     'https://wa.me/55' + c.tel.replace(/\D/g,'') + '?text=' + encodeURIComponent(mensagem);
   openModal('modal-aniversario');
+}
+
+// ═══════════════════════════════════════════════
+// PEÇA PRÓPRIA — adicionar ao carrinho
+// ═══════════════════════════════════════════════
+function adicionarPecaPropria() {
+  const desc  = (document.getElementById('proprio-desc').value  || '').trim();
+  const valor = parseFloat(document.getElementById('proprio-valor').value || 0);
+  const grupo = document.getElementById('proprio-grupo').value  || 'OUTRO';
+  const ref   = (document.getElementById('proprio-ref').value   || '').trim() || 'PP-'+Date.now().toString().slice(-4);
+
+  if (!desc)   { toast('Informe a descrição da peça'); return; }
+  if (!valor)  { toast('Informe o valor da peça');     return; }
+
+  const peca = {
+    id:       'proprio_'+Date.now(),
+    ref,
+    desc,
+    grupo,
+    preco:    valor,
+    barcode:  '',
+    vendido:  false,
+    proprio:  true,   // flag para identificar peça própria
+  };
+
+  addToCart(peca);
+
+  // Limpar campos
+  document.getElementById('proprio-desc').value  = '';
+  document.getElementById('proprio-valor').value = '';
+  document.getElementById('proprio-ref').value   = '';
+  toast('💎 ' + desc + ' adicionada ao carrinho!');
+}
+
+// ═══════════════════════════════════════════════
+// FINANCEIRO — Reprogramar e Cobrar
+// ═══════════════════════════════════════════════
+let _reprogVendaId = null;
+let _reprogNum     = null;
+
+function reprogramarParcela(vendaId, num) {
+  const idx = S.areceber.findIndex(p => p.vendaId === String(vendaId) && p.numParcela === num);
+  if (idx < 0) return;
+  const p = S.areceber[idx];
+  _reprogVendaId = vendaId;
+  _reprogNum     = num;
+
+  document.getElementById('reprog-info').textContent =
+    p.cliente + ' · Parcela ' + p.numParcela + '/' + p.totalParcelas +
+    ' · ' + fmt(p.valorParcela) + ' · Venc atual: ' + p.dataVenda;
+
+  // Pré-preencher com data atual + 7 dias
+  const hoje = new Date();
+  hoje.setDate(hoje.getDate() + 7);
+  document.getElementById('reprog-data').value = hoje.toISOString().split('T')[0];
+
+  openModal('modal-reprogramar');
+}
+
+function confirmarReprogramacao() {
+  const novaData = document.getElementById('reprog-data').value;
+  if (!novaData) { toast('Selecione a nova data'); return; }
+
+  const idx = S.areceber.findIndex(p => p.vendaId === String(_reprogVendaId) && p.numParcela === _reprogNum);
+  if (idx < 0) return;
+
+  const p = S.areceber[idx];
+  // Converter para pt-BR para exibição
+  const [ano, mes, dia] = novaData.split('-');
+  const novaDataBR = dia + '/' + mes + '/' + ano;
+
+  S.areceber[idx].dataVenda = novaDataBR; // atualiza localmente
+
+  // Salvar no Sheets com nova data de vencimento (campo DataVenda = vencimento)
+  sheetsPost({
+    action: 'salvarParcela',
+    parcela: {
+      VendaId:        p.vendaId,
+      DataVenda:      novaDataBR,
+      Cliente:        p.cliente,
+      Celular:        p.celular,
+      Maleta:         p.maleta,
+      ValorVenda:     p.valorVenda,
+      NumParcela:     p.numParcela,
+      TotalParcelas:  p.totalParcelas,
+      ValorParcela:   p.valorParcela,
+      DataPagamento:  p.dataPagamento || '',
+      Status:         p.status,
+    }
+  });
+
+  closeModal('modal-reprogramar');
+  renderFinanceiro();
+  toast('📅 Vencimento alterado para ' + novaDataBR);
+}
+
+function cobrarCliente(vendaId, num) {
+  const idx = S.areceber.findIndex(p => p.vendaId === String(vendaId) && p.numParcela === num);
+  if (idx < 0) return;
+  const p = S.areceber[idx];
+
+  const primeiroNome = (p.cliente || 'cliente').split(' ')[0];
+  const msg =
+`Olá, ${primeiroNome}! 😊
+
+Tudo bem? Passei para dar um aviso gentil sobre um pagamento pendente. 🌸
+
+💍 Ref: Parcela ${p.numParcela}/${p.totalParcelas} — Maleta ${p.maleta}
+💰 Valor: ${fmt(p.valorParcela)}
+📅 Vencimento: ${p.dataVenda}
+
+Quando tiver um momento, pode me confirmar o pagamento? Se precisar de algum prazo adicional, é só me avisar — estou à disposição! 🤝
+
+Obrigada pela atenção,
+${S.maleta.consultora || 'Consultora'} — Fressen Joias 💛`;
+
+  // Abrir WhatsApp com mensagem
+  const tel = p.celular ? p.celular.replace(/\D/g,'') : '';
+  if (tel) {
+    window.open('https://wa.me/55' + tel + '?text=' + encodeURIComponent(msg), '_blank');
+  } else {
+    // Se não tem celular, mostrar modal com mensagem para copiar
+    const modal = document.getElementById('modal-aniversario');
+    if (modal) {
+      document.getElementById('aniv-modal-nome').textContent = '💬 Mensagem de Cobrança — ' + p.cliente;
+      document.getElementById('aniv-modal-texto').value = msg;
+      document.getElementById('aniv-modal-whats').href = '#';
+      document.getElementById('aniv-modal-whats').style.display = 'none';
+      openModal('modal-aniversario');
+    } else {
+      navigator.clipboard && navigator.clipboard.writeText(msg);
+      toast('Mensagem copiada! (sem telefone cadastrado)');
+    }
+  }
 }
 
 // INIT renders
