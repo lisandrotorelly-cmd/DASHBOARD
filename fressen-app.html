@@ -287,9 +287,38 @@ document.addEventListener('DOMContentLoaded', function() {
   <!-- STATS -->
   <div class="stats-row">
     <div class="stat-card"><div class="stat-label">Vendas Maleta</div><div class="stat-val gold" id="stat-hoje">R$ 0</div></div>
-    <div class="stat-card"><div class="stat-label">Itens Vendidos</div><div class="stat-val" id="stat-itens">0</div></div>
-    <div class="stat-card"><div class="stat-label">Em Estoque</div><div class="stat-val" id="stat-disp">0</div></div>
+    <div class="stat-card"><div class="stat-label">Itens Vendidos</div><div class="stat-val" style="color:#2D1A10" id="stat-itens">0</div></div>
+    <div class="stat-card"><div class="stat-label">Em Estoque</div><div class="stat-val" style="color:#2D1A10" id="stat-disp">0</div></div>
     <div class="stat-card"><div class="stat-label">Valor Estoque</div><div class="stat-val gold" id="stat-vest">R$ 0</div></div>
+  </div>
+
+  <!-- META & COMISSÃO -->
+  <div class="card" id="card-meta" style="display:none">
+    <div class="card-title">📊 Meta & Comissão</div>
+    <div style="display:flex;justify-content:space-between;font-size:12px;color:var(--text2);margin-bottom:4px">
+      <span>Progresso</span><span id="meta-pct-txt">0%</span>
+    </div>
+    <div class="report-bar" style="margin-bottom:10px">
+      <div class="report-fill" id="meta-bar" style="width:0%;transition:width 0.6s ease"></div>
+    </div>
+    <div class="stats-row" style="margin-bottom:8px">
+      <div class="stat-card" style="border-left:3px solid var(--rosa)">
+        <div class="stat-label">Vendido</div>
+        <div class="stat-val gold" id="meta-vendido">R$ 0</div>
+      </div>
+      <div class="stat-card" style="border-left:3px solid #aaa">
+        <div class="stat-label">Meta (20%)</div>
+        <div class="stat-val" style="color:#2D1A10" id="meta-valor">R$ 0</div>
+      </div>
+    </div>
+    <div style="background:var(--surface2);border-radius:var(--radius-sm);padding:10px 12px">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">
+        <span style="font-size:12px;color:var(--text2)">Comissão Projetada</span>
+        <span id="meta-comissao-pct" style="font-size:11px;font-weight:700;padding:2px 8px;border-radius:10px;background:var(--rosa-light);color:var(--rosa-dark)">30%</span>
+      </div>
+      <div style="font-size:22px;font-weight:800;color:var(--rosa-dark)" id="meta-comissao-val">R$ 0</div>
+      <div style="font-size:11px;color:var(--text2);margin-top:2px" id="meta-comissao-msg">Venda acima de <span id="meta-ref"></span> para ganhar 35%</div>
+    </div>
   </div>
 
   <!-- AÇÕES RÁPIDAS -->
@@ -555,7 +584,23 @@ document.addEventListener('DOMContentLoaded', function() {
   <div class="stats-row" style="margin-bottom:10px">
     <div class="stat-card"><div class="stat-label">A Receber</div><div class="stat-val gold" id="fin-receber">R$ 0</div></div>
     <div class="stat-card"><div class="stat-label">Recebido</div><div class="stat-val" style="color:var(--success)" id="fin-recebido">R$ 0</div></div>
-    <div class="stat-card"><div class="stat-label">Parcelas Vencidas</div><div class="stat-val" style="color:var(--danger)" id="fin-vencidas">0</div></div>
+    <div class="stat-card"><div class="stat-label">Vencidas</div><div class="stat-val" style="color:var(--danger)" id="fin-vencidas">0</div></div>
+    <div class="stat-card"><div class="stat-label">Baixado</div><div class="stat-val" style="color:#888" id="fin-baixado">R$ 0</div></div>
+  </div>
+
+  <!-- Filtro de data -->
+  <div class="card" style="margin-bottom:8px;padding:10px 12px">
+    <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+      <div style="flex:1;min-width:110px">
+        <label style="font-size:10px;color:var(--text2);font-weight:600;text-transform:uppercase">Vencimento De</label>
+        <input type="date" id="fin-de" onchange="renderFinanceiro()" style="padding:6px;font-size:12px">
+      </div>
+      <div style="flex:1;min-width:110px">
+        <label style="font-size:10px;color:var(--text2);font-weight:600;text-transform:uppercase">Até</label>
+        <input type="date" id="fin-ate" onchange="renderFinanceiro()" style="padding:6px;font-size:12px">
+      </div>
+      <button onclick="limparFiltroFin()" style="font-size:12px;padding:6px 12px;margin-top:14px;border-radius:20px;border:1px solid var(--rosa);color:var(--rosa-dark);background:none;cursor:pointer">✕</button>
+    </div>
   </div>
 
   <!-- Filtros -->
@@ -564,8 +609,10 @@ document.addEventListener('DOMContentLoaded', function() {
     <button id="fin-tab-vencido"  onclick="finTab('vencido')"  style="cursor:pointer;flex:1;padding:7px 4px;border-radius:20px;border:none;font-size:12px;font-weight:600;background:var(--surface2);color:var(--text2);min-width:60px">⚠️ Vencidos</button>
     <button id="fin-tab-pago"     onclick="finTab('pago')"     style="cursor:pointer;flex:1;padding:7px 4px;border-radius:20px;border:none;font-size:12px;font-weight:600;background:var(--surface2);color:var(--text2);min-width:60px">Pagos</button>
     <button id="fin-tab-todos"    onclick="finTab('todos')"    style="cursor:pointer;flex:1;padding:7px 4px;border-radius:20px;border:none;font-size:12px;font-weight:600;background:var(--surface2);color:var(--text2);min-width:60px">Todos</button>
+    <button id="fin-tab-baixado" onclick="finTab('baixado')"  style="cursor:pointer;flex:1;padding:7px 4px;border-radius:20px;border:none;font-size:12px;font-weight:600;background:var(--surface2);color:var(--text2);min-width:60px">⬇️ Baixados</button>
   </div>
 
+  <div id="fin-fluxo-mes"></div>
   <div id="fin-lista"></div>
 </div>
 
@@ -576,15 +623,19 @@ document.addEventListener('DOMContentLoaded', function() {
   <!-- Filtro de data -->
   <div class="card" style="margin-bottom:8px">
     <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
-      <div style="flex:1;min-width:120px">
+      <div style="flex:1;min-width:100px">
         <label style="font-size:10px;color:var(--text2);font-weight:600;text-transform:uppercase">De</label>
-        <input type="date" id="hist-de" onchange="renderHistorico()" style="padding:7px;font-size:13px">
+        <input type="date" id="hist-de" onchange="renderHistorico()" style="padding:7px;font-size:12px">
       </div>
-      <div style="flex:1;min-width:120px">
+      <div style="flex:1;min-width:100px">
         <label style="font-size:10px;color:var(--text2);font-weight:600;text-transform:uppercase">Até</label>
-        <input type="date" id="hist-ate" onchange="renderHistorico()" style="padding:7px;font-size:13px">
+        <input type="date" id="hist-ate" onchange="renderHistorico()" style="padding:7px;font-size:12px">
       </div>
-      <button class="btn btn-outline" onclick="limparFiltroHist()" style="font-size:12px;padding:7px 14px;margin-top:14px;color:var(--rosa-dark);border-color:var(--rosa)">✕ Limpar</button>
+      <div style="flex:1;min-width:80px">
+        <label style="font-size:10px;color:var(--text2);font-weight:600;text-transform:uppercase">Maleta</label>
+        <input type="text" id="hist-maleta" placeholder="Nº" oninput="renderHistoricoTotais();renderHistoricoConteudo()" style="padding:7px;font-size:12px;text-align:center">
+      </div>
+      <button class="btn btn-outline" onclick="limparFiltroHist()" style="font-size:12px;padding:7px 12px;margin-top:14px;color:var(--rosa-dark);border-color:var(--rosa)">✕</button>
     </div>
   </div>
 
@@ -634,6 +685,21 @@ document.addEventListener('DOMContentLoaded', function() {
       Encerra a maleta atual. O histórico de vendas e clientes é mantido.
       O estoque é zerado para importação do arquivo PDF da nova Maleta.
     </p>
+    <!-- Datas da maleta -->
+    <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px" id="fech-datas-wrap">
+      <div class="cond-item" style="background:var(--surface2);border-radius:var(--radius-sm);padding:8px 10px;flex:1;min-width:90px">
+        <div class="cond-label">Liberação</div>
+        <div class="cond-val" style="font-size:12px" id="fech-data-inicio">—</div>
+      </div>
+      <div class="cond-item" style="background:var(--surface2);border-radius:var(--radius-sm);padding:8px 10px;flex:1;min-width:90px">
+        <div class="cond-label">Previsão</div>
+        <div class="cond-val" style="font-size:12px" id="fech-data-prev">—</div>
+      </div>
+      <div class="cond-item" style="background:var(--surface2);border-radius:var(--radius-sm);padding:8px 10px;flex:1;min-width:90px">
+        <div class="cond-label">Acerto</div>
+        <div class="cond-val" style="font-size:12px;color:var(--danger)" id="fech-data-acerto">—</div>
+      </div>
+    </div>
     <div id="fech-resumo" style="background:var(--surface2);border-radius:var(--radius-sm);padding:12px;margin-bottom:12px;font-size:13px"></div>
     <p style="font-size:12px;color:var(--danger);font-weight:600;margin-bottom:10px">⚠️ Esta ação não pode ser desfeita.</p>
     <button class="btn btn-outline" onclick="gerarPDFFechamento()" style="margin-bottom:8px;border-color:var(--rosa);color:var(--rosa-dark)">
@@ -831,20 +897,6 @@ function renderMaletaCard() {
       </div>
     </div>
     <div class="cond-row">
-      <div class="cond-item">
-        <div class="cond-label">Liberação</div>
-        <div class="cond-val" style="font-size:12px">${fmt_date(m.dataInicio)}</div>
-      </div>
-      <div class="cond-item">
-        <div class="cond-label">Previsão</div>
-        <div class="cond-val" style="font-size:12px">${fmt_date(m.dataPrevisao)}</div>
-      </div>
-      <div class="cond-item">
-        <div class="cond-label">Acerto</div>
-        <div class="cond-val" style="font-size:12px;color:var(--danger)">${fmt_date(m.dataAcerto)}</div>
-      </div>
-    </div>
-    <div class="cond-row">
       <div class="cond-item"><div class="cond-label">Total Peças</div><div class="cond-val">${S.produtos.length}</div></div>
       <div class="cond-item"><div class="cond-label">Vendidas</div><div class="cond-val" style="color:var(--success)">${S.produtos.filter(p=>p.vendido).length}</div></div>
       <div class="cond-item"><div class="cond-label">Disponíveis</div><div class="cond-val">${S.produtos.filter(p=>!p.vendido).length}</div></div>
@@ -894,8 +946,15 @@ function updateStats() {
   const totalHoje = vendasHoje.reduce((a,v)=>a+v.total,0);
   const valorEst = disp.reduce((a,p)=>a+p.preco,0);
   // vendas da maleta atual (não só hoje)
-  const totalMaleta = S.vendas.reduce((a,v)=>a+v.total,0);
+  // Somente vendas da maleta atual
+  const numMaletaAtual = S.maleta.numero || '';
+  const vendasMaletaAtual = numMaletaAtual
+    ? S.vendas.filter(v => String(v.numMaleta||'') === String(numMaletaAtual))
+    : S.vendas;
+  const totalMaleta = vendasMaletaAtual.reduce((a,v)=>a+v.total,0);
   document.getElementById('stat-hoje').textContent = fmt(totalMaleta);
+  document.getElementById('stat-itens').textContent = vendasMaletaAtual.reduce((a,v)=>a+v.itens.length,0);
+  updateMeta();
   document.getElementById('stat-itens').textContent = vend.length;
   document.getElementById('stat-disp').textContent = disp.length;
   document.getElementById('stat-vest').textContent = fmt(valorEst);
@@ -1031,6 +1090,7 @@ async function carregarDoSheets(silencioso) {
         vendaMap[vid] = {
           id:           vid,
           data:         v.data_venda,
+          numMaleta:    String(v.num_maleta || ''),
           cliente:      clienteObj,
           total:        0,
           itens:        [],
@@ -2212,6 +2272,10 @@ function updateRelatorio() {
 function atualizarFechResumo() {
   const safe=(id,v)=>{const el=document.getElementById(id);if(el)el.textContent=v;};
   safe('fech-num-maleta',S.maleta.numero||'—');safe('fech-consultora',S.maleta.consultora||'');
+  // Datas na página maleta
+  const fdI=document.getElementById('fech-data-inicio');if(fdI)fdI.textContent=fmt_date(S.maleta.dataInicio)||'—';
+  const fdP=document.getElementById('fech-data-prev'); if(fdP)fdP.textContent=fmt_date(S.maleta.dataPrevisao)||'—';
+  const fdA=document.getElementById('fech-data-acerto');if(fdA)fdA.textContent=fmt_date(S.maleta.dataAcerto)||'—';
   const total=S.produtos.length,vend=S.produtos.filter(p=>p.vendido).length,disp=total-vend;
   const vlVend=S.vendas.reduce((a,v)=>a+v.total,0),vlDisp=S.produtos.filter(p=>!p.vendido).reduce((a,p)=>a+p.preco,0);
   const el=document.getElementById('fech-resumo');if(!el)return;
@@ -2225,7 +2289,7 @@ let _finTab='pendente';
 
 function finTab(tab) {
   _finTab=tab;
-  ['pendente','vencido','pago','todos'].forEach(t=>{
+  ['pendente','vencido','pago','todos','baixado'].forEach(t=>{
     const btn=document.getElementById('fin-tab-'+t);
     if(!btn) return;
     btn.style.background=t===tab?(tab==='vencido'?'var(--danger)':'var(--rosa)'):'var(--surface2)';
@@ -2237,21 +2301,63 @@ function finTab(tab) {
 
 function renderFinanceiro() {
   const hoje=new Date();hoje.setHours(0,0,0,0);const todas=S.areceber||[];
+  // Filtro de data
+  const finDe  = (document.getElementById('fin-de')||{}).value||'';
+  const finAte = (document.getElementById('fin-ate')||{}).value||'';
+
   let lista=[...todas];
-  if(_finTab==='pendente')lista=lista.filter(p=>p.status!=='Pago');
-  if(_finTab==='pago')lista=lista.filter(p=>p.status==='Pago');
-  if(_finTab==='vencido')lista=lista.filter(p=>p.status!=='Pago'&&parseDateBRtoObj(p.dataVencimento||p.dataVenda)<hoje);
+  if (finDe)  lista=lista.filter(p=>parseDateBRtoObj(p.dataVencimento||p.dataVenda)>=new Date(finDe));
+  if (finAte) lista=lista.filter(p=>parseDateBRtoObj(p.dataVencimento||p.dataVenda)<=new Date(finAte+'T23:59:59'));
+  if(_finTab==='pendente')lista=lista.filter(p=>p.status!=='Pago'&&p.status!=='Baixado');
+  if(_finTab==='pago')    lista=lista.filter(p=>p.status==='Pago');
+  if(_finTab==='vencido') lista=lista.filter(p=>p.status!=='Pago'&&p.status!=='Baixado'&&parseDateBRtoObj(p.dataVencimento||p.dataVenda)<hoje);
+  if(_finTab==='baixado') lista=lista.filter(p=>p.status==='Baixado');
   lista.sort((a,b)=>new Date(a.dataVenda)-new Date(b.dataVenda));
-  const aRec=todas.filter(p=>p.status!=='Pago').reduce((a,p)=>a+p.valorParcela,0);
-  const receb=todas.filter(p=>p.status==='Pago').reduce((a,p)=>a+p.valorParcela,0);
-  const venc=todas.filter(p=>p.status!=='Pago'&&parseDateBRtoObj(p.dataVencimento||p.dataVenda)<hoje).length;
+  // Cards respeitam filtro de data quando ativo
+  const base = (finDe||finAte) ? lista : todas; // se tem filtro, usa lista filtrada; senão usa tudo
+  const aRec   = base.filter(p=>p.status!=='Pago'&&p.status!=='Baixado').reduce((a,p)=>a+p.valorParcela,0);
+  const receb  = base.filter(p=>p.status==='Pago').reduce((a,p)=>a+p.valorParcela,0);
+  const baix   = todas.filter(p=>p.status==='Baixado').reduce((a,p)=>a+p.valorParcela,0); // baixado sempre global
+  const venc   = base.filter(p=>p.status!=='Pago'&&p.status!=='Baixado'&&parseDateBRtoObj(p.dataVencimento||p.dataVenda)<hoje).length;
   const safe=(id,v)=>{const el=document.getElementById(id);if(el)el.textContent=v;};
-  safe('fin-receber',fmt(aRec));safe('fin-recebido',fmt(receb));safe('fin-vencidas',venc);
+  safe('fin-receber',fmt(aRec));safe('fin-recebido',fmt(receb));safe('fin-vencidas',venc);safe('fin-baixado',fmt(baix));
+  // ── Fluxo por mês (próximos meses) ──
+  const fluxoEl = document.getElementById('fin-fluxo-mes');
+  if (fluxoEl) {
+    const pendentes = todas.filter(p=>p.status!=='Pago'&&p.status!=='Baixado');
+    const meses = {};
+    pendentes.forEach(p => {
+      const dt = parseDateBRtoObj(p.dataVencimento||p.dataVenda);
+      const k = isNaN(dt) ? 'Sem data' : dt.toLocaleDateString('pt-BR',{month:'short',year:'numeric'});
+      if (!meses[k]) meses[k] = { val:0, qtd:0, dt };
+      meses[k].val += p.valorParcela;
+      meses[k].qtd++;
+    });
+    const entradasMes = Object.entries(meses).sort((a,b)=>a[1].dt-b[1].dt).slice(0,6);
+    if (!entradasMes.length) {
+      fluxoEl.innerHTML = '';
+    } else {
+      const maxVal = Math.max(...entradasMes.map(([,d])=>d.val), 1);
+      fluxoEl.innerHTML = `
+        <div class="card" style="margin-bottom:10px">
+          <div class="card-title">📅 Previsão por Mês</div>
+          ${entradasMes.map(([mes,d])=>`
+            <div style="margin-bottom:8px">
+              <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:3px">
+                <span style="font-weight:600;text-transform:capitalize">${mes}</span>
+                <span><strong style="color:var(--rosa-dark)">${fmt(d.val)}</strong> <span style="color:var(--text2);font-size:10px">${d.qtd} parcela(s)</span></span>
+              </div>
+              <div class="report-bar"><div class="report-fill" style="width:${Math.round(d.val/maxVal*100)}%"></div></div>
+            </div>`).join('')}
+        </div>`;
+    }
+  }
+
   const el=document.getElementById('fin-lista');if(!el)return;
   if(!lista.length){el.innerHTML='<div class="empty"><div class="empty-icon">💳</div><p>Nenhuma parcela encontrada</p></div>';return;}
   el.innerHTML=lista.map(p=>{
     const pago=p.status==='Pago', dtV=parseDateBRtoObj(p.dataVencimento||p.dataVenda), atras=!pago&&dtV<hoje;
-    const cor=atras?'var(--danger)':pago?'var(--success)':'var(--rosa)';
+    const baixado=p.status==='Baixado'; const cor=baixado?'#bbb':atras?'var(--danger)':pago?'var(--success)':'var(--rosa)';
     const btnStyle='font-size:10px;padding:3px 7px;border-radius:4px;cursor:pointer;border:none;font-weight:600;margin-top:3px;';
     return `<div class="card" style="margin-bottom:7px;border-left:3px solid ${cor}">
       <div style="display:flex;justify-content:space-between;align-items:flex-start">
@@ -2259,7 +2365,7 @@ function renderFinanceiro() {
           <div style="font-size:13px;font-weight:600">${p.cliente||'Sem cliente'}</div>
           <div style="font-size:11px;color:var(--text2)">${p.celular?p.celular+' · ':''}Maleta ${p.maleta||'—'}</div>
           <div style="font-size:11px;color:var(--text2)">Parcela ${p.numParcela}/${p.totalParcelas} · Vencimento: <strong>${fmtDataBR(p.dataVencimento||p.dataVenda)}</strong></div>
-          ${atras?'<div style="font-size:10px;color:var(--danger);font-weight:600">⚠️ VENCIDA</div>':''}
+          ${baixado?'<div style="font-size:10px;color:#999;font-weight:600">⬇️ BAIXADO</div>':atras?'<div style="font-size:10px;color:var(--danger);font-weight:600">⚠️ VENCIDA</div>':''}
           ${pago&&p.dataPagamento?`<div style="font-size:10px;color:var(--success);font-weight:600">✅ Pago em ${p.dataPagamento}</div>`:''}
         </div>
         <div style="text-align:right;margin-left:8px;min-width:80px">
@@ -2271,8 +2377,12 @@ function renderFinanceiro() {
             style="${btnStyle}background:rgba(241,183,156,0.2);color:var(--rosa-dark)">📅 Prazo</button>
           <button onclick="cobrarCliente('${p.vendaId}',${p.numParcela})"
             style="${btnStyle}background:rgba(37,211,102,0.12);color:#128C7E">💬 Cobrar</button>
-          `:`<button onclick="toggleParcela('${p.vendaId}',${p.numParcela})"
-            style="${btnStyle}background:rgba(201,168,76,0.1);color:var(--text2)">↩ Desfazer</button>`}
+          <button onclick="baixarParcela('${p.vendaId}',${p.numParcela})"
+            style="${btnStyle}background:rgba(150,150,150,0.12);color:#777">⬇️ Baixar</button>
+          `:`<div style="display:flex;flex-direction:column;gap:2px">
+            <button onclick="toggleParcela('${p.vendaId}',${p.numParcela})"
+              style="${btnStyle}background:rgba(201,168,76,0.1);color:var(--text2)">↩ Desfazer</button>
+            ${p.status==='Baixado'?`<span style="font-size:9px;color:#999;text-align:center">⬇️ Baixado</span>`:''}</div>`}
         </div>
       </div>
     </div>`;
@@ -2304,10 +2414,7 @@ function histTab(tab) {
   renderHistoricoConteudo();
 }
 
-function limparFiltroHist() {
-  const de=document.getElementById('hist-de'),ate=document.getElementById('hist-ate');
-  if(de)de.value='';if(ate)ate.value='';renderHistorico();
-}
+// limparFiltroHist → ver nova versão acima
 
 function parseDateVenda(s) {
   // Suporta "12/05/2026, 19:43:22" e "2026-05-12T..." e outros
@@ -2320,7 +2427,9 @@ function parseDateVenda(s) {
 function getVendasFiltradas() {
   const de=(document.getElementById('hist-de')||{}).value||'';
   const ate=(document.getElementById('hist-ate')||{}).value||'';
+  const mal=((document.getElementById('hist-maleta')||{}).value||'').trim();
   return _histVendas.filter(v=>{
+    if (mal && String(v.num_maleta||'').trim() !== mal) return false;
     if (!de && !ate) return true;
     const dt = parseDateVenda(v.data_venda);
     if (!dt) return true;
@@ -2417,6 +2526,7 @@ async function finalizarVenda() {
 
   const venda={
     id:Date.now().toString(), data:new Date().toISOString(),
+    numMaleta: S.maleta.numero || '',
     itens:[...S.cart], total, pagamentos:{...S.paySelected},
     pagamentoStr:pagStr, cliente, obs, parcelas:parcelasInfo,
   };
@@ -2868,6 +2978,27 @@ function confirmarReprogramacao() {
   toast('📅 Vencimento alterado para ' + novaDataBR);
 }
 
+function baixarParcela(vendaId, num) {
+  const idx = S.areceber.findIndex(p=>p.vendaId===String(vendaId)&&p.numParcela===num);
+  if (idx<0) return;
+  const p = S.areceber[idx];
+  if (!confirm(`Baixar a parcela ${p.numParcela}/${p.totalParcelas} de ${p.cliente||'cliente'} (${fmt(p.valorParcela)})?
+
+Isso indica que o valor NÃO será recebido.
+O registro ficará como "Baixado" no histórico.`)) return;
+  S.areceber[idx].status = 'Baixado';
+  S.areceber[idx].dataPagamento = new Date().toLocaleDateString('pt-BR');
+  sheetsPost({action:'salvarParcela',parcela:{
+    VendaId:p.vendaId, DataVenda:p.dataVenda, Cliente:p.cliente, Celular:p.celular,
+    Maleta:p.maleta, ValorVenda:p.valorVenda, NumParcela:p.numParcela,
+    TotalParcelas:p.totalParcelas, ValorParcela:p.valorParcela,
+    Intervalo:p.intervalo||30, DataVencimento:p.dataVencimento||p.dataVenda,
+    DataPagamento:S.areceber[idx].dataPagamento, Status:'Baixado'
+  }});
+  renderFinanceiro();
+  toast('⬇️ Parcela baixada — valor não será cobrado.');
+}
+
 function cobrarCliente(vendaId, num) {
   const idx = S.areceber.findIndex(p => p.vendaId === String(vendaId) && p.numParcela === num);
   if (idx < 0) return;
@@ -2906,6 +3037,68 @@ ${S.maleta.consultora || 'Consultora'} — Fressen Joias 💛`;
       toast('Mensagem copiada! (sem telefone cadastrado)');
     }
   }
+}
+
+// ═══════════════════════════════════════════════
+// META & COMISSÃO
+// ═══════════════════════════════════════════════
+function updateMeta() {
+  const m       = S.maleta;
+  const card    = document.getElementById('card-meta');
+  if (!card) return;
+
+  const vlEstoque = S.produtos.reduce((a,p)=>a+p.preco, 0);
+  if (!vlEstoque) { card.style.display='none'; return; }
+  card.style.display = 'block';
+
+  const numMaletaAtual = m.numero || '';
+  const vendasM = numMaletaAtual
+    ? S.vendas.filter(v=>String(v.numMaleta||'')===String(numMaletaAtual))
+    : S.vendas;
+  const vendido = vendasM.reduce((a,v)=>a+v.total, 0);
+  const meta    = vlEstoque * 0.20;          // 20% do estoque
+  const pct     = meta > 0 ? Math.min(Math.round(vendido/meta*100), 150) : 0;
+  const acimaMeta = vendido >= meta;
+  const pctComis  = acimaMeta ? 0.35 : 0.30;
+  const comissao  = vendido * pctComis;
+
+  const safe = (id,v) => { const el=document.getElementById(id); if(el) el.textContent=v; };
+  safe('meta-vendido',  fmt(vendido));
+  safe('meta-valor',    fmt(meta));
+  safe('meta-pct-txt',  pct+'%');
+  safe('meta-comissao-pct', (pctComis*100)+'%');
+  safe('meta-comissao-val', fmt(comissao));
+  safe('meta-ref',      fmt(meta));
+  safe('meta-comissao-msg', acimaMeta
+    ? '🎉 Meta atingida! Comissão de 35% aplicada'
+    : `Venda acima de ${fmt(meta)} para ganhar 35%`);
+
+  const bar = document.getElementById('meta-bar');
+  if (bar) {
+    bar.style.width = Math.min(pct,100)+'%';
+    bar.style.background = acimaMeta ? 'var(--success)' : 'var(--rosa)';
+  }
+  const pctEl = document.getElementById('meta-comissao-pct');
+  if (pctEl) {
+    pctEl.style.background = acimaMeta ? 'rgba(30,126,52,0.15)' : 'var(--rosa-light)';
+    pctEl.style.color      = acimaMeta ? 'var(--success)'       : 'var(--rosa-dark)';
+  }
+}
+
+// ═══════════════════════════════════════════════
+// FILTROS
+// ═══════════════════════════════════════════════
+function limparFiltroFin() {
+  const de=document.getElementById('fin-de'), ate=document.getElementById('fin-ate');
+  if(de) de.value=''; if(ate) ate.value='';
+  renderFinanceiro();
+}
+
+function limparFiltroHist() {
+  ['hist-de','hist-ate','hist-maleta'].forEach(id=>{
+    const el=document.getElementById(id); if(el) el.value='';
+  });
+  renderHistorico();
 }
 
 // INIT renders
