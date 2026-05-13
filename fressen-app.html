@@ -733,7 +733,7 @@ let S = {
   scannerActive: false,
   currentModalItem: null,
   currentModalCliente: null,
-  apiUrl: 'https://script.google.com/macros/s/AKfycbxhxfnp1uLxtJU6-rtyGZYmID4xNPcU_mJFNV2Y1QczAnAaVOJLGKqr7ViQcsezlGBg0w/exec',
+  apiUrl: 'https://script.google.com/macros/s/AKfycbwi-xU8NCW6w0jxWyo2hS0CYr1WVkXwXgGesAMMT3Cc9OKXFkANJLaCdmdcdLCjYIyM/exec',
   maleta: { numero:'', consultora:'', ciclo:'', dataInicio:'', dataAcerto:'' },
 };
 
@@ -850,6 +850,30 @@ function renderMaletaCard() {
       <div class="cond-item"><div class="cond-label">Disponíveis</div><div class="cond-val">${S.produtos.filter(p=>!p.vendido).length}</div></div>
     </div>`;
 }
+// Converte "dd/mm/yyyy" ou ISO para objeto Date (para comparações)
+function parseDateBRtoObj(d) {
+  if (!d) return new Date(0);
+  const s = String(d).trim();
+  const pt = s.match(/^(\d{2})\/(\d{2})\/(\d{4})/);
+  if (pt) return new Date(pt[3]+'-'+pt[2]+'-'+pt[1]+'T12:00:00');
+  const dt = new Date(s);
+  return isNaN(dt) ? new Date(0) : dt;
+}
+
+// Normaliza qualquer formato de data para "dd/mm/yyyy" (exibição)
+function fmtDataBR(d) {
+  if (!d) return '';
+  const s = String(d).trim();
+  // Já está em pt-BR dd/mm/yyyy
+  if (/^\d{2}\/\d{2}\/\d{4}/.test(s)) return s.substring(0,10);
+  // ISO ou outro formato — tenta converter
+  try {
+    const dt = new Date(s);
+    if (!isNaN(dt)) return dt.toLocaleDateString('pt-BR');
+  } catch(e) {}
+  return s;
+}
+
 function fmt_date(d) {
   if (!d) return '—';
   try {
@@ -1032,16 +1056,18 @@ async function carregarDoSheets(silencioso) {
     S.areceber = res.areceber.map(function(r) {
       return {
         vendaId:       String(r.id_venda       || ''),
-        dataVenda:     String(r.data_venda      || ''),
-        cliente:       String(r.cliente         || ''),
-        celular:       String(r.celular         || ''),
-        maleta:        String(r.maleta          || ''),
-        valorVenda:    Number(r.valor_venda)    || 0,
-        numParcela:    Number(r.num_parcela)    || 1,
-        totalParcelas: Number(r.total_parcelas) || 1,
-        valorParcela:  Number(r.valor_parcela)  || 0,
-        dataPagamento: String(r.data_pagamento  || ''),
-        status:        String(r.status          || 'Pendente'),
+        dataVenda:      fmtDataBR(r.data_venda),
+        cliente:        String(r.cliente         || ''),
+        celular:        String(r.celular         || ''),
+        maleta:         String(r.maleta          || ''),
+        valorVenda:     Number(r.valor_venda)    || 0,
+        numParcela:     Number(r.num_parcela)    || 1,
+        totalParcelas:  Number(r.total_parcelas) || 1,
+        valorParcela:   Number(r.valor_parcela)  || 0,
+        intervalo:      Number(r.intervalo)      || 30,
+        dataVencimento: fmtDataBR(r.data_vencimento || r.data_venda),
+        dataPagamento:  String(r.data_pagamento  || ''),
+        status:         String(r.status          || 'Pendente'),
       };
     });
   } else {
@@ -2214,17 +2240,17 @@ function renderFinanceiro() {
   let lista=[...todas];
   if(_finTab==='pendente')lista=lista.filter(p=>p.status!=='Pago');
   if(_finTab==='pago')lista=lista.filter(p=>p.status==='Pago');
-  if(_finTab==='vencido')lista=lista.filter(p=>p.status!=='Pago'&&new Date(p.dataVenda)<hoje);
+  if(_finTab==='vencido')lista=lista.filter(p=>p.status!=='Pago'&&parseDateBRtoObj(p.dataVencimento||p.dataVenda)<hoje);
   lista.sort((a,b)=>new Date(a.dataVenda)-new Date(b.dataVenda));
   const aRec=todas.filter(p=>p.status!=='Pago').reduce((a,p)=>a+p.valorParcela,0);
   const receb=todas.filter(p=>p.status==='Pago').reduce((a,p)=>a+p.valorParcela,0);
-  const venc=todas.filter(p=>p.status!=='Pago'&&new Date(p.dataVenda)<hoje).length;
+  const venc=todas.filter(p=>p.status!=='Pago'&&parseDateBRtoObj(p.dataVencimento||p.dataVenda)<hoje).length;
   const safe=(id,v)=>{const el=document.getElementById(id);if(el)el.textContent=v;};
   safe('fin-receber',fmt(aRec));safe('fin-recebido',fmt(receb));safe('fin-vencidas',venc);
   const el=document.getElementById('fin-lista');if(!el)return;
   if(!lista.length){el.innerHTML='<div class="empty"><div class="empty-icon">💳</div><p>Nenhuma parcela encontrada</p></div>';return;}
   el.innerHTML=lista.map(p=>{
-    const pago=p.status==='Pago', dtV=new Date(p.dataVenda), atras=!pago&&dtV<hoje;
+    const pago=p.status==='Pago', dtV=parseDateBRtoObj(p.dataVencimento||p.dataVenda), atras=!pago&&dtV<hoje;
     const cor=atras?'var(--danger)':pago?'var(--success)':'var(--rosa)';
     const btnStyle='font-size:10px;padding:3px 7px;border-radius:4px;cursor:pointer;border:none;font-weight:600;margin-top:3px;';
     return `<div class="card" style="margin-bottom:7px;border-left:3px solid ${cor}">
@@ -2232,7 +2258,7 @@ function renderFinanceiro() {
         <div style="flex:1;min-width:0">
           <div style="font-size:13px;font-weight:600">${p.cliente||'Sem cliente'}</div>
           <div style="font-size:11px;color:var(--text2)">${p.celular?p.celular+' · ':''}Maleta ${p.maleta||'—'}</div>
-          <div style="font-size:11px;color:var(--text2)">Parcela ${p.numParcela}/${p.totalParcelas} · Vencimento: <strong>${p.dataVenda}</strong></div>
+          <div style="font-size:11px;color:var(--text2)">Parcela ${p.numParcela}/${p.totalParcelas} · Vencimento: <strong>${fmtDataBR(p.dataVencimento||p.dataVenda)}</strong></div>
           ${atras?'<div style="font-size:10px;color:var(--danger);font-weight:600">⚠️ VENCIDA</div>':''}
           ${pago&&p.dataPagamento?`<div style="font-size:10px;color:var(--success);font-weight:600">✅ Pago em ${p.dataPagamento}</div>`:''}
         </div>
@@ -2257,7 +2283,7 @@ function toggleParcela(vendaId,num) {
   const idx=S.areceber.findIndex(p=>p.vendaId===String(vendaId)&&p.numParcela===num);if(idx<0)return;
   const p=S.areceber[idx],pago=p.status!=='Pago',dataPagamento=pago?new Date().toLocaleString('pt-BR'):'';
   S.areceber[idx].status=pago?'Pago':'Pendente';S.areceber[idx].dataPagamento=dataPagamento;
-  sheetsPost({action:'salvarParcela',parcela:{VendaId:vendaId,DataVenda:p.dataVenda,Cliente:p.cliente,Celular:p.celular,Maleta:p.maleta,ValorVenda:p.valorVenda,NumParcela:num,TotalParcelas:p.totalParcelas,ValorParcela:p.valorParcela,DataPagamento:dataPagamento,Status:pago?'Pago':'Pendente'}});
+  sheetsPost({action:'salvarParcela',parcela:{VendaId:vendaId,DataVenda:p.dataVenda,Cliente:p.cliente,Celular:p.celular,Maleta:p.maleta,ValorVenda:p.valorVenda,NumParcela:num,TotalParcelas:p.totalParcelas,ValorParcela:p.valorParcela,Intervalo:p.intervalo||30,DataVencimento:p.dataVencimento||p.dataVenda,DataPagamento:dataPagamento,Status:pago?'Pago':'Pendente'}});
   renderFinanceiro();toast(pago?'✅ Parcela marcada como paga!':'Marcado como pendente');
 }
 
@@ -2410,7 +2436,9 @@ async function finalizarVenda() {
   if(parcelasInfo&&parcelasInfo.qtd>0){
     for(let pi=1;pi<=parcelasInfo.qtd;pi++){
       const dtBase=new Date(venda.data);dtBase.setDate(dtBase.getDate()+parcelasInfo.dias*pi);
-      sheetsPost({action:'salvarParcela',parcela:{VendaId:venda.id,DataVenda:new Date(venda.data).toLocaleString('pt-BR'),Cliente:cliente?cliente.nome:'',Celular:cliente?cliente.tel||'':'',Maleta:S.maleta.numero||'',ValorVenda:venda.total,NumParcela:pi,TotalParcelas:parcelasInfo.qtd,ValorParcela:parcelasInfo.valorTotal/parcelasInfo.qtd,DataPagamento:'',Status:'Pendente'}});
+      const _dtBase=new Date(venda.data); _dtBase.setDate(_dtBase.getDate()+parcelasInfo.dias*pi);
+      const _dtVenc=_dtBase.toLocaleDateString('pt-BR');
+      sheetsPost({action:'salvarParcela',parcela:{VendaId:venda.id,DataVenda:new Date(venda.data).toLocaleDateString('pt-BR'),Cliente:cliente?cliente.nome:'',Celular:cliente?cliente.tel||'':'',Maleta:S.maleta.numero||'',ValorVenda:venda.total,NumParcela:pi,TotalParcelas:parcelasInfo.qtd,ValorParcela:parcelasInfo.valorTotal/parcelasInfo.qtd,Intervalo:parcelasInfo.dias,DataVencimento:_dtVenc,DataPagamento:'',Status:'Pendente'}});
     }
   }
 
@@ -2791,7 +2819,7 @@ function reprogramarParcela(vendaId, num) {
 
   document.getElementById('reprog-info').textContent =
     p.cliente + ' · Parcela ' + p.numParcela + '/' + p.totalParcelas +
-    ' · ' + fmt(p.valorParcela) + ' · Venc atual: ' + p.dataVenda;
+    ' · ' + fmt(p.valorParcela) + ' · Venc atual: ' + fmtDataBR(p.dataVencimento||p.dataVenda);
 
   // Pré-preencher com data atual + 7 dias
   const hoje = new Date();
@@ -2813,14 +2841,15 @@ function confirmarReprogramacao() {
   const [ano, mes, dia] = novaData.split('-');
   const novaDataBR = dia + '/' + mes + '/' + ano;
 
-  S.areceber[idx].dataVenda = novaDataBR; // atualiza localmente
+  S.areceber[idx].dataVencimento = novaDataBR; // atualiza dataVencimento, não dataVenda
 
-  // Salvar no Sheets com nova data de vencimento (campo DataVenda = vencimento)
+  // Salvar no Sheets com nova data de vencimento
   sheetsPost({
     action: 'salvarParcela',
     parcela: {
       VendaId:        p.vendaId,
-      DataVenda:      novaDataBR,
+      DataVenda:      p.dataVenda,      // data original do lançamento
+      DataVencimento: novaDataBR,       // nova data de vencimento
       Cliente:        p.cliente,
       Celular:        p.celular,
       Maleta:         p.maleta,
@@ -2828,6 +2857,7 @@ function confirmarReprogramacao() {
       NumParcela:     p.numParcela,
       TotalParcelas:  p.totalParcelas,
       ValorParcela:   p.valorParcela,
+      Intervalo:      p.intervalo || 30,
       DataPagamento:  p.dataPagamento || '',
       Status:         p.status,
     }
