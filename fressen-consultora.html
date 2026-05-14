@@ -822,7 +822,7 @@ let S = {
   scannerActive: false,
   currentModalItem: null,
   currentModalCliente: null,
-  apiUrl: 'https://script.google.com/macros/s/AKfycbwpWZbz8Q0ySerNhdy6FYrrU1W_Mr2Gm4Spvj4LkLB3v6_GXYfkWE-rjemkLMm-1Kw/exec',
+  apiUrl: 'https://script.google.com/macros/s/AKfycbxuKvinfT58TaEcJE2R7SC_qzPOsecqdy6nnHKoIEKsjnk-XKl_6WTmYxKxdlMZPSTO/exec',
   maleta: { numero:'', consultora:'', ciclo:'', dataInicio:'', dataAcerto:'' },
 };
 
@@ -2020,28 +2020,42 @@ async function cancelarVendaModal(){
   if(!p || !p.vendido) return;
   if(!confirm('Cancelar a venda de ' + p.ref + '?\n\nA peça voltará para Disponível e o registro será removido.')) return;
 
-  // Remove venda do estado local (pelo id da peça ou ref)
-  const idxVenda = S.vendas.findIndex(v=>v.itens&&v.itens.find(i=>i.id===p.id||i.ref===p.ref));
+  // Busca venda pelo ref nos itens
+  const idxVenda = S.vendas.findIndex(v=>v.itens&&v.itens.find(i=>i.ref===p.ref));
   let vendaId = null;
   if(idxVenda >= 0){
     vendaId = S.vendas[idxVenda].id;
-    // Se a venda tem só 1 item, remove a venda inteira
     if(S.vendas[idxVenda].itens.length === 1){
       S.vendas.splice(idxVenda, 1);
     } else {
-      // Venda com múltiplos itens — remove só este item
-      S.vendas[idxVenda].itens = S.vendas[idxVenda].itens.filter(i=>i.id!==p.id&&i.ref!==p.ref);
+      S.vendas[idxVenda].itens = S.vendas[idxVenda].itens.filter(i=>i.ref!==p.ref);
       S.vendas[idxVenda].total = S.vendas[idxVenda].itens.reduce((a,i)=>a+i.preco,0);
     }
   }
+
+  // Fallback: busca vendaId via A receber pelo ref da peça (clienteVenda)
+  if(!vendaId){
+    const parcelaRef = S.areceber.find(r => r.cliente === p.clienteVenda || true);
+    // Busca na aba vendas pelo ref diretamente
+    const viaVendas = S.vendas.find(v=>v.itens&&v.itens.find(i=>i.ref===p.ref));
+    if(viaVendas) vendaId = viaVendas.id;
+  }
+
+  // vendaId da aba Vendas tem formato "TIMESTAMP_REF" — extrai só o timestamp base
+  const vendaIdBase = vendaId ? vendaId.split('_')[0] : null;
+  console.log('[Cancelar] ref:', p.ref, '| vendaId:', vendaId, '| base:', vendaIdBase);
 
   // Devolve peça para disponível no estado local
   p.vendido = false;
   p.dataVenda = '';
   p.clienteVenda = '';
 
+  // Remove parcelas do estado local (compara pelo base)
+  if(vendaIdBase) S.areceber = S.areceber.filter(r => !r.vendaId.startsWith(vendaIdBase));
+
   // Sincroniza com Sheets
   await sheetsPost({ action: 'cancelarVenda', ref: p.ref, vendaId: vendaId || '' });
+  if(vendaIdBase) await sheetsPost({ action: 'cancelarParcelas', vendaId: vendaIdBase });
 
   closeModal('modal-item');
   save(); updateStats(); renderMaletaCard(); renderEstoque();
