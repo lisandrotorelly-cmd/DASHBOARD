@@ -588,18 +588,22 @@ document.addEventListener('DOMContentLoaded', function() {
     <div class="stat-card"><div class="stat-label">Baixado</div><div class="stat-val" style="color:#888" id="fin-baixado">R$ 0</div></div>
   </div>
 
-  <!-- Filtro de data -->
+  <!-- Filtros data + cliente -->
   <div class="card" style="margin-bottom:8px;padding:10px 12px">
     <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
-      <div style="flex:1;min-width:110px">
-        <label style="font-size:10px;color:var(--text2);font-weight:600;text-transform:uppercase">Vencimento De</label>
+      <div style="flex:1;min-width:90px">
+        <label style="font-size:10px;color:var(--text2);font-weight:600;text-transform:uppercase">De</label>
         <input type="date" id="fin-de" onchange="renderFinanceiro()" style="padding:6px;font-size:12px">
       </div>
-      <div style="flex:1;min-width:110px">
+      <div style="flex:1;min-width:90px">
         <label style="font-size:10px;color:var(--text2);font-weight:600;text-transform:uppercase">Até</label>
         <input type="date" id="fin-ate" onchange="renderFinanceiro()" style="padding:6px;font-size:12px">
       </div>
-      <button onclick="limparFiltroFin()" style="font-size:12px;padding:6px 12px;margin-top:14px;border-radius:20px;border:1px solid var(--rosa);color:var(--rosa-dark);background:none;cursor:pointer">✕</button>
+      <div style="flex:1;min-width:100px">
+        <label style="font-size:10px;color:var(--text2);font-weight:600;text-transform:uppercase">Cliente</label>
+        <input type="text" id="fin-cliente" placeholder="Nome..." oninput="renderFinanceiro()" style="padding:6px;font-size:12px">
+      </div>
+      <button onclick="limparFiltroFin()" style="font-size:12px;padding:6px 10px;margin-top:14px;border-radius:20px;border:1px solid var(--rosa);color:var(--rosa-dark);background:none;cursor:pointer">✕</button>
     </div>
   </div>
 
@@ -710,6 +714,25 @@ document.addEventListener('DOMContentLoaded', function() {
 </div>
 
 <!-- ===== MODAIS ===== -->
+<!-- Modal Pagamento Parcial -->
+<div class="modal-bg" id="modal-parcial">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-title">$ Pagamento Parcial</div>
+    <p style="font-size:12px;color:var(--text2);margin-bottom:12px" id="parcial-info"></p>
+    <div class="field">
+      <label>Valor Recebido (R$)</label>
+      <input type="number" id="parcial-valor" min="0.01" step="0.01"
+        style="font-size:18px;text-align:center;font-weight:700"
+        oninput="calcularSaldoParcial()"
+        onkeydown="if(event.key==='Enter')confirmarParcial()">
+    </div>
+    <div id="parcial-saldo" style="font-size:12px;font-weight:600;margin-bottom:12px;min-height:18px;text-align:center"></div>
+    <button class="btn btn-gold" onclick="confirmarParcial()" style="margin-bottom:7px">Confirmar Pagamento</button>
+    <button class="btn btn-outline" onclick="closeModal('modal-parcial')">Cancelar</button>
+  </div>
+</div>
+
 <!-- Modal Reprogramar Parcela -->
 <div class="modal-bg" id="modal-reprogramar">
   <div class="modal">
@@ -2264,7 +2287,23 @@ function updateRelatorio() {
   const elCat=document.getElementById('rel-categorias');if(elCat)elCat.innerHTML=Object.entries(grupos).sort((a,b)=>b[1].v-a[1].v).map(([g,d])=>`<div style="margin-bottom:8px"><div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:2px"><span style="font-weight:600">${g}</span><span style="color:var(--text2)">${d.v}/${d.t} · ${fmt(d.val)}</span></div><div class="report-bar"><div class="report-fill" style="width:${d.t>0?Math.round(d.v/d.t*100):0}%"></div></div></div>`).join('');
   const porCli={};S.vendas.forEach(v=>{const n=v.cliente?.nome||'Sem cliente';if(!porCli[n])porCli[n]={qtd:0,val:0};porCli[n].qtd++;porCli[n].val+=v.total;});
   const elCli=document.getElementById('rel-por-cliente');if(elCli)elCli.innerHTML=Object.entries(porCli).sort((a,b)=>b[1].val-a[1].val).slice(0,8).map(([n,d])=>`<div style="display:flex;justify-content:space-between;padding:5px 0;border-bottom:0.5px solid var(--border);font-size:13px"><span>${n}</span><span style="color:var(--rosa-dark);font-weight:600">${fmt(d.val)} · ${d.qtd}x</span></div>`).join('');
-  const pags={};let totalPag=0;S.vendas.forEach(v=>Object.entries(v.pagamentos||{}).forEach(([m,val])=>{if(!pags[m])pags[m]=0;pags[m]+=Number(val);totalPag+=Number(val);}));
+  const pags={};let totalPag=0;
+  // Distribuir total real da venda pelas formas — evita erro de parse de milhar
+  S.vendas.forEach(v=>{
+    const totalV=v.total||v.itens.reduce((a,i)=>a+i.preco,0);
+    const src=v.pagamentoStr||Object.entries(v.pagamentos||{}).map(([k,val])=>k+': R$'+Number(val).toFixed(2)).join(' | ');
+    const formas=src.split(' | ').map(p=>p.split(':')[0].trim()).filter(Boolean);
+    if(!formas.length)return;
+    if(formas.length===1){
+      const m=formas[0];if(!pags[m])pags[m]=0;pags[m]+=totalV;totalPag+=totalV;
+    } else {
+      const partes=src.split(' | ');
+      let somaStr=0;
+      const vals=partes.map(p=>{const raw=(p.split('R$')[1]||'0').replace(/[.]/g,'').replace(',','.');const v=parseFloat(raw)||0;somaStr+=v;return{m:p.split(':')[0].trim(),v};});
+      const fator=somaStr>0?totalV/somaStr:1;
+      vals.forEach(({m,v})=>{if(!m)return;const aj=parseFloat((v*fator).toFixed(2));if(!pags[m])pags[m]=0;pags[m]+=aj;totalPag+=aj;});
+    }
+  });
   const elPag=document.getElementById('rel-pagamentos');if(elPag)elPag.innerHTML=Object.entries(pags).length?Object.entries(pags).map(([m,v])=>{const pp=totalPag>0?Math.round(v/totalPag*100):0;return `<div style="margin-bottom:8px"><div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:3px"><span style="font-weight:600">${m}</span><span><strong style="color:var(--rosa-dark)">${fmt(v)}</strong><span style="color:var(--text2);font-size:11px;margin-left:4px">${pp}%</span></span></div><div class="report-bar"><div class="report-fill" style="width:${pp}%"></div></div></div>`;}).join(''):'<p style="font-size:13px;color:var(--text2)">Nenhuma venda</p>';
   const ult=[...S.vendas].reverse().slice(0,5);const elUlt=document.getElementById('rel-vendas-list');if(elUlt)elUlt.innerHTML=ult.length?ult.map(v=>`<div class="sale-row"><div><div style="font-size:13px;font-weight:600">${v.cliente?.nome||'Sem cliente'}</div><div style="font-size:11px;color:var(--text2)">${new Date(v.data).toLocaleString('pt-BR')}</div><div style="font-size:11px;color:var(--text2)">${v.itens.length} peça(s) · ${v.pagamentoStr||''}</div></div><div style="font-weight:700;color:var(--rosa-dark)">${fmt(v.total)}</div></div>`).join(''):'<div class="empty"><div class="empty-icon">📊</div><p>Nenhuma venda</p></div>';
 }
@@ -2310,10 +2349,13 @@ function renderFinanceiro() {
   let lista=[...todas];
   if (finDe)  lista=lista.filter(p=>parseDateBRtoObj(p.dataVencimento||p.dataVenda)>=new Date(finDe));
   if (finAte) lista=lista.filter(p=>parseDateBRtoObj(p.dataVencimento||p.dataVenda)<=new Date(finAte+'T23:59:59'));
-  if(_finTab==='pendente')lista=lista.filter(p=>p.status!=='Pago'&&p.status!=='Baixado');
-  if(_finTab==='pago')    lista=lista.filter(p=>p.status==='Pago');
-  if(_finTab==='vencido') lista=lista.filter(p=>p.status!=='Pago'&&p.status!=='Baixado'&&parseDateBRtoObj(p.dataVencimento||p.dataVenda)<hoje);
-  if(_finTab==='baixado') lista=lista.filter(p=>p.status==='Baixado');
+  const finCli = ((document.getElementById('fin-cliente')||{}).value||'').toLowerCase().trim();
+  if (finCli) lista=lista.filter(p=>(p.cliente||'').toLowerCase().includes(finCli));
+  if(_finTab==='pendente')lista=lista.filter(p=>p.status!=='Pago'&&p.status!=='Baixado'&&(p.cliente||'').trim()!=='');
+  if(_finTab==='pago')    lista=lista.filter(p=>p.status==='Pago'&&(p.cliente||'').trim()!=='');
+  if(_finTab==='vencido') lista=lista.filter(p=>p.status!=='Pago'&&p.status!=='Baixado'&&parseDateBRtoObj(p.dataVencimento||p.dataVenda)<hoje&&(p.cliente||'').trim()!=='');
+  if(_finTab==='baixado') lista=lista.filter(p=>p.status==='Baixado'&&(p.cliente||'').trim()!=='');
+  // Tab "Todos" mostra tudo incluindo sem cliente, com aviso para exclusão
   lista.sort((a,b)=>new Date(a.dataVenda)-new Date(b.dataVenda));
   // Cards respeitam filtro de data quando ativo
   const base = (finDe||finAte) ? lista : todas; // se tem filtro, usa lista filtrada; senão usa tudo
@@ -2361,6 +2403,22 @@ function renderFinanceiro() {
     const pago=p.status==='Pago', dtV=parseDateBRtoObj(p.dataVencimento||p.dataVenda), atras=!pago&&dtV<hoje;
     const baixado=p.status==='Baixado'; const cor=baixado?'#bbb':atras?'var(--danger)':pago?'var(--success)':'var(--rosa)';
     const btnStyle='font-size:10px;padding:3px 7px;border-radius:4px;cursor:pointer;border:none;font-weight:600;margin-top:3px;';
+    if (!pago && !baixado && !(p.cliente||'').trim()) {
+      // Registro inválido (sem cliente) — exibir só em "Todos" com opção de excluir
+      return `<div class="card" style="margin-bottom:7px;border-left:3px solid #ccc;opacity:0.7">
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <div>
+            <div style="font-size:12px;color:#999;font-style:italic">⚠️ Registro sem cliente (inválido)</div>
+            <div style="font-size:11px;color:var(--text2)">Maleta ${p.maleta||'—'} · Parcela ${p.numParcela}/${p.totalParcelas}</div>
+            <div style="font-size:11px;color:var(--text2)">${fmt(p.valorParcela)}</div>
+          </div>
+          <button onclick="excluirParcelaSemCliente('${p.vendaId}',${p.numParcela})"
+            style="font-size:11px;padding:4px 10px;border-radius:4px;border:1px solid #ccc;background:#f9f9f9;color:#999;cursor:pointer">
+            🗑️ Excluir
+          </button>
+        </div>
+      </div>`;
+    }
     return `<div class="card" style="margin-bottom:7px;border-left:3px solid ${cor}">
       <div style="display:flex;justify-content:space-between;align-items:flex-start">
         <div style="flex:1;min-width:0">
@@ -2381,6 +2439,8 @@ function renderFinanceiro() {
             style="${btnStyle}background:rgba(37,211,102,0.12);color:#128C7E">💬 Cobrar</button>
           <button onclick="baixarParcela('${p.vendaId}',${p.numParcela})"
             style="${btnStyle}background:rgba(150,150,150,0.12);color:#777">⬇️ Baixar</button>
+          <button onclick="pagarParcial('${p.vendaId}',${p.numParcela})"
+            style="${btnStyle}background:rgba(241,183,156,0.2);color:var(--rosa-dark)">$ Parcial</button>
           `:`<div style="display:flex;flex-direction:column;gap:2px">
             <button onclick="toggleParcela('${p.vendaId}',${p.numParcela})"
               style="${btnStyle}background:rgba(201,168,76,0.1);color:var(--text2)">↩ Desfazer</button>
@@ -2464,7 +2524,38 @@ function renderHistoricoConteudo() {
     const grupos={}, totalG=vf.reduce((a,v)=>a+Number(v.preco||0),0);
     vf.forEach(v=>{const g=v.grupo||'Outros';if(!grupos[g])grupos[g]={qtd:0,val:0};grupos[g].qtd++;grupos[g].val+=Number(v.preco||0);});
     const pags={};let totalPag=0;
-    vf.forEach(v=>{if(v.forma_pagamento){v.forma_pagamento.split(' | ').forEach(p=>{const m=p.split(':')[0].trim();if(m){if(!pags[m])pags[m]=0;const val=parseFloat((p.split('R$')[1]||'0').replace(',','.'));pags[m]+=val;totalPag+=val;}});}});
+    // Agrupar vendas por id_venda e somar os preços reais das peças
+    const vendasMap={};
+    vf.forEach(v=>{
+      if(!vendasMap[v.id_venda]) vendasMap[v.id_venda]={forma:v.forma_pagamento||'',total:0};
+      vendasMap[v.id_venda].total += Number(v.preco||0);
+    });
+    // Para cada venda única, distribuir o total real pelas formas de pagamento
+    Object.values(vendasMap).forEach(venda=>{
+      const formas = venda.forma.split(' | ').map(p=>p.split(':')[0].trim()).filter(Boolean);
+      if(!formas.length) return;
+      if(formas.length===1) {
+        // Uma forma só — atribui o total real da venda
+        const m=formas[0];
+        if(!pags[m])pags[m]=0;
+        pags[m]+=venda.total; totalPag+=venda.total;
+      } else {
+        // Múltiplas formas — tenta parsear proporções da string, normaliza para fechar no total
+        const partes=venda.forma.split(' | ');
+        let somaStr=0;
+        const vals=partes.map(p=>{
+          const raw=(p.split('R$')[1]||'0').replace(/\./g,'').replace(',','.');
+          const v=parseFloat(raw)||0; somaStr+=v; return {m:p.split(':')[0].trim(),v};
+        });
+        const fator = somaStr>0 ? venda.total/somaStr : 1; // normaliza para fechar no total real
+        vals.forEach(({m,v})=>{
+          if(!m)return;
+          const ajustado=v*fator;
+          if(!pags[m])pags[m]=0;
+          pags[m]+=ajustado; totalPag+=ajustado;
+        });
+      }
+    });
     const clis={};vf.forEach(v=>{const k=String(v.cliente||'Sem cliente').trim()||'Sem cliente';if(!clis[k])clis[k]={nome:k,qtd:0,val:0};clis[k].qtd++;clis[k].val+=Number(v.preco||0);});
     const topCli=Object.values(clis).sort((a,b)=>b.val-a.val).slice(0,5);
     el.innerHTML=`
@@ -2980,6 +3071,23 @@ function confirmarReprogramacao() {
   toast('📅 Vencimento alterado para ' + novaDataBR);
 }
 
+function excluirParcelaSemCliente(vendaId, num) {
+  if (!confirm('Excluir este registro inválido (sem cliente)?')) return;
+  const idx = S.areceber.findIndex(p=>p.vendaId===String(vendaId)&&p.numParcela===num);
+  if (idx >= 0) {
+    S.areceber.splice(idx, 1);
+    // Marca como Baixado no Sheets para sumir da listagem
+    sheetsPost({action:'salvarParcela', parcela:{
+      VendaId:vendaId, DataVenda:'', Cliente:'_excluido_', Celular:'',
+      Maleta:'', ValorVenda:0, NumParcela:num, TotalParcelas:num,
+      ValorParcela:0, Intervalo:30, DataVencimento:'',
+      DataPagamento:new Date().toLocaleDateString('pt-BR'), Status:'Baixado'
+    }});
+  }
+  renderFinanceiro();
+  toast('Registro excluído.');
+}
+
 function baixarParcela(vendaId, num) {
   const idx = S.areceber.findIndex(p=>p.vendaId===String(vendaId)&&p.numParcela===num);
   if (idx<0) return;
@@ -2999,6 +3107,110 @@ O registro ficará como "Baixado" no histórico.`)) return;
   }});
   renderFinanceiro();
   toast('⬇️ Parcela baixada — valor não será cobrado.');
+}
+
+// ── Modal Parcial ──────────────────────────────────────────────
+function pagarParcial(vendaId, num) {
+  const idx = S.areceber.findIndex(p=>p.vendaId===String(vendaId)&&p.numParcela===num);
+  if (idx<0) return;
+  const p = S.areceber[idx];
+  S._parcialIdx = idx; // guarda referência
+
+  document.getElementById('parcial-info').textContent =
+    p.cliente+' · Parcela '+p.numParcela+'/'+p.totalParcelas+' · Total: '+fmt(p.valorParcela);
+  document.getElementById('parcial-valor').value = '';
+  document.getElementById('parcial-valor').placeholder = 'Ex: 50,00 (total: '+fmt(p.valorParcela)+')';
+  document.getElementById('parcial-saldo').textContent = '';
+  openModal('modal-parcial');
+}
+
+function calcularSaldoParcial() {
+  const idx = S._parcialIdx;
+  if (idx==null||idx<0) return;
+  const p = S.areceber[idx];
+  const raw = document.getElementById('parcial-valor').value.replace(',','.');
+  const pago = parseFloat(raw)||0;
+  const restante = p.valorParcela - pago;
+  const el = document.getElementById('parcial-saldo');
+  if (pago <= 0) { el.textContent=''; return; }
+  if (pago >= p.valorParcela) {
+    el.textContent = '✅ Pagamento integral — será marcado como Pago';
+    el.style.color = 'var(--success)';
+  } else {
+    el.textContent = `Restante após pagamento: ${fmt(restante)} — novo título será criado`;
+    el.style.color = 'var(--rosa-dark)';
+  }
+}
+
+function confirmarParcial() {
+  const idx = S._parcialIdx;
+  if (idx==null||idx<0) return;
+  const p = S.areceber[idx];
+  const raw = document.getElementById('parcial-valor').value.replace(',','.');
+  const valorPago = parseFloat(raw)||0;
+  if (!valorPago || valorPago <= 0) { toast('Informe o valor pago'); return; }
+
+  const dataPag = new Date().toLocaleDateString('pt-BR');
+  const restante = parseFloat((p.valorParcela - valorPago).toFixed(2));
+
+  if (valorPago >= p.valorParcela) {
+    // Pagamento integral — marcar como pago normalmente
+    S.areceber[idx].status = 'Pago';
+    S.areceber[idx].dataPagamento = dataPag;
+    sheetsPost({action:'salvarParcela',parcela:{
+      VendaId:p.vendaId,DataVenda:p.dataVenda,Cliente:p.cliente,Celular:p.celular,
+      Maleta:p.maleta,ValorVenda:p.valorVenda,NumParcela:p.numParcela,
+      TotalParcelas:p.totalParcelas,ValorParcela:p.valorParcela,
+      Intervalo:p.intervalo||30,DataVencimento:p.dataVencimento||p.dataVenda,
+      DataPagamento:dataPag,Status:'Pago'
+    }});
+    toast('✅ Parcela paga integralmente!');
+  } else {
+    // Pagamento parcial:
+    // 1. Marca parcela atual como Pago com o valor pago
+    S.areceber[idx].status = 'Pago';
+    S.areceber[idx].dataPagamento = dataPag;
+    S.areceber[idx].valorParcela  = valorPago; // ajusta valor para o que foi pago
+    sheetsPost({action:'salvarParcela',parcela:{
+      VendaId:p.vendaId,DataVenda:p.dataVenda,Cliente:p.cliente,Celular:p.celular,
+      Maleta:p.maleta,ValorVenda:p.valorVenda,NumParcela:p.numParcela,
+      TotalParcelas:p.totalParcelas,ValorParcela:valorPago,
+      Intervalo:p.intervalo||30,DataVencimento:p.dataVencimento||p.dataVenda,
+      DataPagamento:dataPag,Status:'Pago'
+    }});
+
+    // 2. Cria novo título para o restante com nova data de vencimento (+intervalo dias)
+    const dtBase = parseDateBRtoObj(p.dataVencimento||p.dataVenda);
+    dtBase.setDate(dtBase.getDate() + (p.intervalo||30));
+    const novaData = dtBase.toLocaleDateString('pt-BR');
+    const novaParc = {
+      vendaId:       p.vendaId+'_p'+Date.now(),
+      dataVenda:     p.dataVenda,
+      cliente:       p.cliente,
+      celular:       p.celular,
+      maleta:        p.maleta,
+      valorVenda:    restante,
+      numParcela:    1,
+      totalParcelas: 1,
+      valorParcela:  restante,
+      intervalo:     p.intervalo||30,
+      dataVencimento:novaData,
+      dataPagamento: '',
+      status:        'Pendente',
+    };
+    S.areceber.push(novaParc);
+    sheetsPost({action:'salvarParcela',parcela:{
+      VendaId:novaParc.vendaId,DataVenda:novaParc.dataVenda,Cliente:novaParc.cliente,
+      Celular:novaParc.celular,Maleta:novaParc.maleta,ValorVenda:restante,
+      NumParcela:1,TotalParcelas:1,ValorParcela:restante,
+      Intervalo:novaParc.intervalo,DataVencimento:novaData,
+      DataPagamento:'',Status:'Pendente'
+    }});
+    toast(`✅ R$ ${valorPago.toFixed(2).replace('.',',')} pago. Novo título de ${fmt(restante)} criado para ${novaData}`);
+  }
+
+  closeModal('modal-parcial');
+  renderFinanceiro();
 }
 
 function cobrarCliente(vendaId, num) {
@@ -3091,8 +3303,7 @@ function updateMeta() {
 // FILTROS
 // ═══════════════════════════════════════════════
 function limparFiltroFin() {
-  const de=document.getElementById('fin-de'), ate=document.getElementById('fin-ate');
-  if(de) de.value=''; if(ate) ate.value='';
+  ['fin-de','fin-ate','fin-cliente'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
   renderFinanceiro();
 }
 
