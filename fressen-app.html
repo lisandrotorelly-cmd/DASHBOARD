@@ -2435,16 +2435,18 @@ function renderFinanceiro() {
         <div style="text-align:right;margin-left:8px;min-width:80px">
           <div style="font-size:14px;font-weight:700;color:var(--rosa-dark)">${fmt(p.valorParcela)}</div>
           ${!pago?`
-          <button onclick="toggleParcela('${p.vendaId}',${p.numParcela})"
-            style="${btnStyle}background:rgba(30,126,52,0.12);color:var(--success)">✅ Pago</button>
-          <button onclick="reprogramarParcela('${p.vendaId}',${p.numParcela})"
-            style="${btnStyle}background:rgba(241,183,156,0.2);color:var(--rosa-dark)">📅 Prazo</button>
-          <button onclick="cobrarCliente('${p.vendaId}',${p.numParcela})"
-            style="${btnStyle}background:rgba(37,211,102,0.12);color:#128C7E">💬 Cobrar</button>
-          <button onclick="baixarParcela('${p.vendaId}',${p.numParcela})"
-            style="${btnStyle}background:rgba(150,150,150,0.12);color:#777">⬇️ Baixar</button>
-          <button onclick="pagarParcial('${p.vendaId}',${p.numParcela})"
-            style="${btnStyle}background:rgba(241,183,156,0.2);color:var(--rosa-dark)">$ Parcial</button>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:3px;margin-top:4px">
+            <button onclick="toggleParcela('${p.vendaId}',${p.numParcela})"
+              style="${btnStyle}background:rgba(30,126,52,0.12);color:var(--success)">✅ Pago</button>
+            <button onclick="reprogramarParcela('${p.vendaId}',${p.numParcela})"
+              style="${btnStyle}background:rgba(241,183,156,0.2);color:var(--rosa-dark)">📅 Prazo</button>
+            <button onclick="cobrarCliente('${p.vendaId}',${p.numParcela})"
+              style="${btnStyle}background:rgba(37,211,102,0.12);color:#128C7E">💬 Cobrar</button>
+            <button onclick="baixarParcela('${p.vendaId}',${p.numParcela})"
+              style="${btnStyle}background:rgba(150,150,150,0.12);color:#777">⬇️ Baixar</button>
+            <button onclick="pagarParcial('${p.vendaId}',${p.numParcela})"
+              style="${btnStyle}background:rgba(241,183,156,0.2);color:var(--rosa-dark);grid-column:1/-1">$ Parcial</button>
+          </div>
           `:`<div style="display:flex;flex-direction:column;gap:2px">
             <button onclick="toggleParcela('${p.vendaId}',${p.numParcela})"
               style="${btnStyle}background:rgba(201,168,76,0.1);color:var(--text2)">↩ Desfazer</button>
