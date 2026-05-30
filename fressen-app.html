@@ -578,7 +578,10 @@ document.addEventListener('DOMContentLoaded', function() {
 <!-- ========== RELATÓRIO ========== -->
 <!-- ========== FINANCEIRO ========== -->
 <div class="page" id="page-financeiro">
-  <div class="section-title">Fluxo Financeiro</div>
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+    <div class="section-title" style="margin:0">Fluxo Financeiro</div>
+    <button onclick="gerarPDFFinanceiro()" style="font-size:12px;padding:6px 12px;border-radius:20px;border:1.5px solid var(--rosa);color:var(--rosa-dark);background:none;cursor:pointer;white-space:nowrap">📄 Relatório</button>
+  </div>
 
   <!-- Resumo -->
   <div class="stats-row" style="margin-bottom:10px">
@@ -586,6 +589,7 @@ document.addEventListener('DOMContentLoaded', function() {
     <div class="stat-card"><div class="stat-label">Recebido</div><div class="stat-val" style="color:var(--success)" id="fin-recebido">R$ 0</div></div>
     <div class="stat-card"><div class="stat-label">Vencidas</div><div class="stat-val" style="color:var(--danger)" id="fin-vencidas">0</div></div>
     <div class="stat-card"><div class="stat-label">Baixado</div><div class="stat-val" style="color:#888" id="fin-baixado">R$ 0</div></div>
+    <div class="stat-card"><div class="stat-label">Canceladas</div><div class="stat-val" style="color:#888" id="fin-cancelado">0</div></div>
   </div>
 
   <!-- Filtros data + cliente -->
@@ -613,16 +617,21 @@ document.addEventListener('DOMContentLoaded', function() {
     <button id="fin-tab-vencido"  onclick="finTab('vencido')"  style="cursor:pointer;flex:1;padding:7px 4px;border-radius:20px;border:none;font-size:12px;font-weight:600;background:var(--surface2);color:var(--text2);min-width:60px">⚠️ Vencidos</button>
     <button id="fin-tab-pago"     onclick="finTab('pago')"     style="cursor:pointer;flex:1;padding:7px 4px;border-radius:20px;border:none;font-size:12px;font-weight:600;background:var(--surface2);color:var(--text2);min-width:60px">Pagos</button>
     <button id="fin-tab-todos"    onclick="finTab('todos')"    style="cursor:pointer;flex:1;padding:7px 4px;border-radius:20px;border:none;font-size:12px;font-weight:600;background:var(--surface2);color:var(--text2);min-width:60px">Todos</button>
-    <button id="fin-tab-baixado" onclick="finTab('baixado')"  style="cursor:pointer;flex:1;padding:7px 4px;border-radius:20px;border:none;font-size:12px;font-weight:600;background:var(--surface2);color:var(--text2);min-width:60px">⬇️ Baixados</button>
+    <button id="fin-tab-baixado"    onclick="finTab('baixado')"    style="cursor:pointer;flex:1;padding:7px 4px;border-radius:20px;border:none;font-size:12px;font-weight:600;background:var(--surface2);color:var(--text2);min-width:60px">⬇️ Baixados</button>
+    <button id="fin-tab-cancelado" onclick="finTab('cancelado')" style="cursor:pointer;flex:1;padding:7px 4px;border-radius:20px;border:none;font-size:12px;font-weight:600;background:var(--surface2);color:var(--text2);min-width:60px">🚫 Canceladas</button>
   </div>
 
   <div id="fin-fluxo-mes"></div>
   <div id="fin-lista"></div>
+
 </div>
 
 <!-- ========== HISTÓRICO DE VENDAS ========== -->
 <div class="page" id="page-historico">
-  <div class="section-title">Histórico de Vendas</div>
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+    <div class="section-title" style="margin:0">Histórico de Vendas</div>
+    <button onclick="gerarPDFHistorico()" style="font-size:12px;padding:6px 12px;border-radius:20px;border:1.5px solid var(--rosa);color:var(--rosa-dark);background:none;cursor:pointer;white-space:nowrap">📄 Relatório</button>
+  </div>
 
   <!-- Filtro de data -->
   <div class="card" style="margin-bottom:8px">
@@ -638,6 +647,10 @@ document.addEventListener('DOMContentLoaded', function() {
       <div style="flex:1;min-width:80px">
         <label style="font-size:10px;color:var(--text2);font-weight:600;text-transform:uppercase">Maleta</label>
         <input type="text" id="hist-maleta" placeholder="Nº" oninput="renderHistoricoTotais();renderHistoricoConteudo()" style="padding:7px;font-size:12px;text-align:center">
+      </div>
+      <div style="flex:1;min-width:110px">
+        <label style="font-size:10px;color:var(--text2);font-weight:600;text-transform:uppercase">Cliente</label>
+        <input type="text" id="hist-cliente" placeholder="Nome..." oninput="renderHistoricoTotais();renderHistoricoConteudo()" style="padding:7px;font-size:12px">
       </div>
       <button class="btn btn-outline" onclick="limparFiltroHist()" style="font-size:12px;padding:7px 12px;margin-top:14px;color:var(--rosa-dark);border-color:var(--rosa)">✕</button>
     </div>
@@ -670,6 +683,7 @@ document.addEventListener('DOMContentLoaded', function() {
   </div>
 
   <div id="hist-conteudo"></div>
+
 </div>
 
 <!-- ========== RELATÓRIO / MALETA ========== -->
@@ -822,7 +836,7 @@ let S = {
   scannerActive: false,
   currentModalItem: null,
   currentModalCliente: null,
-  apiUrl: 'https://script.google.com/macros/s/AKfycbw1C2mWZC6jgiZCMRnYmMwlI1feU0OvJWe9SgjNVC2Xqkw_kbXEdPGgdzb4w_Icv0TgFg/exec',
+  apiUrl: 'https://script.google.com/macros/s/AKfycbwbFIENoXyTsrw7kEDJzq8c0nu2I0pPKTLvILzUMYMC1x1RlKGmpV5d_ZHxVzsHtrFttQ/exec',
   maleta: { numero:'', consultora:'', ciclo:'', dataInicio:'', dataAcerto:'' },
 };
 
@@ -1053,11 +1067,7 @@ async function carregarDoSheets(silencioso) {
 
   if (!res) {
     // Sheets não respondeu — mantém zerado, mostra aviso
-    updateStats(); renderMaletaCard(); renderEstoque(); renderClientes(); populateClienteSelect();
-    if (!silencioso) toast('❌ Sem resposta do Sheets. Verifique o Apps Script.');
-    return;
-  }
-
+    // Carrega dados da maleta da aba Maleta do Sheets
   if (res.maleta && res.maleta.length > 0) {
     const m = res.maleta[0]; // sempre 1 linha
     if (m.numero) {
@@ -1074,6 +1084,11 @@ async function carregarDoSheets(silencioso) {
       };
       save(); // persiste no localStorage
     }
+  }
+
+  updateStats(); renderMaletaCard(); renderEstoque(); renderClientes(); populateClienteSelect();
+    if (!silencioso) toast('❌ Sem resposta do Sheets. Verifique o Apps Script.');
+    return;
   }
 
   console.log('[Sheets] estoque:', (res.estoque||[]).length, 'vendas:', (res.vendas||[]).length, 'clientes:', (res.clientes||[]).length);
@@ -2024,33 +2039,50 @@ async function cancelarVendaModal(){
   if(!p || !p.vendido) return;
   if(!confirm('Cancelar a venda de ' + p.ref + '?\n\nA peça voltará para Disponível e o registro será removido.')) return;
 
-  // Remove venda do estado local (pelo ref)
-  const idxVenda = S.vendas.findIndex(v=>v.itens&&v.itens.find(i=>i.ref===p.ref));
+  // Remove venda do estado local (pelo id da peça ou ref)
+  const idxVenda = S.vendas.findIndex(v=>v.itens&&v.itens.find(i=>i.id===p.id||i.ref===p.ref));
   let vendaId = null;
   if(idxVenda >= 0){
-    vendaId = S.vendas[idxVenda].id;
+    // S.vendas[i].id pode ser "1780108548_AN1-1748" (do Sheets) ou "1780108548" (local)
+    // Precisamos do ID BASE sem o sufixo _ref para encontrar os títulos em A receber
+    const rawId = S.vendas[idxVenda].id;
+    // Remove sufixo _REFERENCIA se existir (formato: timestamp_ref ou timestamp_ref-cor)
+    vendaId = rawId.replace(/_[A-Z]{1,4}[0-9].*$/, '').replace(/_[A-Za-z0-9\-]+$/, '') || rawId;
+    // Garante que pegamos o timestamp puro (primeiros 13 dígitos se for timestamp)
+    const tsMatch = rawId.match(/^(\d{10,13})/);
+    if (tsMatch) vendaId = tsMatch[1];
+
+    // Se a venda tem só 1 item, remove a venda inteira
     if(S.vendas[idxVenda].itens.length === 1){
       S.vendas.splice(idxVenda, 1);
     } else {
-      S.vendas[idxVenda].itens = S.vendas[idxVenda].itens.filter(i=>i.ref!==p.ref);
+      // Venda com múltiplos itens — remove só este item
+      S.vendas[idxVenda].itens = S.vendas[idxVenda].itens.filter(i=>i.id!==p.id&&i.ref!==p.ref);
       S.vendas[idxVenda].total = S.vendas[idxVenda].itens.reduce((a,i)=>a+i.preco,0);
     }
   }
-
-  // vendaId da aba Vendas tem formato "TIMESTAMP_REF" — extrai só o timestamp base
-  const vendaIdBase = vendaId ? vendaId.split('_')[0] : null;
 
   // Devolve peça para disponível no estado local
   p.vendido = false;
   p.dataVenda = '';
   p.clienteVenda = '';
 
-  // Remove parcelas do estado local
-  if(vendaIdBase) S.areceber = S.areceber.filter(r => !r.vendaId.startsWith(vendaIdBase));
+  // Marca títulos em S.areceber como "Venda Cancelada"
+  if (vendaId) {
+    S.areceber.forEach(t => {
+      // ID em S.areceber pode ser: "1780108548", "1780108548_AN1-1748", "1780108548_Pix", "_p..."
+      const tBase = t.vendaId.replace(/_p\d+$/, '').replace(/_[A-Za-z]+$/, '');
+      const tBaseNum = tBase.match(/^(\d{10,13})/);
+      const tBaseStr = tBaseNum ? tBaseNum[1] : tBase;
+      if (tBaseStr === vendaId || t.vendaId === vendaId || t.vendaId.startsWith(vendaId + '_')) {
+        t.status = 'Venda Cancelada';
+        t.dataPagamento = new Date().toLocaleDateString('pt-BR');
+      }
+    });
+  }
 
   // Sincroniza com Sheets
-  await sheetsPost({ action: 'cancelarVenda', ref: p.ref, vendaId: vendaIdBase || '' });
-  if(vendaIdBase) await sheetsPost({ action: 'cancelarParcelas', vendaId: vendaIdBase });
+  await sheetsPost({ action: 'cancelarVenda', ref: p.ref, vendaId: vendaId || '' });
 
   closeModal('modal-item');
   save(); updateStats(); renderMaletaCard(); renderEstoque();
@@ -2334,7 +2366,7 @@ let _finTab='pendente';
 
 function finTab(tab) {
   _finTab=tab;
-  ['pendente','vencido','pago','todos','baixado'].forEach(t=>{
+  ['pendente','vencido','pago','todos','baixado','cancelado'].forEach(t=>{
     const btn=document.getElementById('fin-tab-'+t);
     if(!btn) return;
     btn.style.background=t===tab?(tab==='vencido'?'var(--danger)':'var(--rosa)'):'var(--surface2)';
@@ -2355,20 +2387,23 @@ function renderFinanceiro() {
   if (finAte) lista=lista.filter(p=>parseDateBRtoObj(p.dataVencimento||p.dataVenda)<=new Date(finAte+'T23:59:59'));
   const finCli = ((document.getElementById('fin-cliente')||{}).value||'').toLowerCase().trim();
   if (finCli) lista=lista.filter(p=>(p.cliente||'').toLowerCase().includes(finCli));
-  if(_finTab==='pendente')lista=lista.filter(p=>p.status!=='Pago'&&p.status!=='Baixado'&&(p.cliente||'').trim()!=='');
-  if(_finTab==='pago')    lista=lista.filter(p=>p.status==='Pago'&&(p.cliente||'').trim()!=='');
-  if(_finTab==='vencido') lista=lista.filter(p=>p.status!=='Pago'&&p.status!=='Baixado'&&parseDateBRtoObj(p.dataVencimento||p.dataVenda)<hoje&&(p.cliente||'').trim()!=='');
-  if(_finTab==='baixado') lista=lista.filter(p=>p.status==='Baixado'&&(p.cliente||'').trim()!=='');
+  const isCancelado = s => s === 'Venda Cancelada';
+  if(_finTab==='pendente')  lista=lista.filter(p=>p.status!=='Pago'&&p.status!=='Baixado'&&!isCancelado(p.status)&&(p.cliente||'').trim()!=='');
+  if(_finTab==='pago')      lista=lista.filter(p=>p.status==='Pago'&&(p.cliente||'').trim()!=='');
+  if(_finTab==='vencido')   lista=lista.filter(p=>p.status!=='Pago'&&p.status!=='Baixado'&&!isCancelado(p.status)&&parseDateBRtoObj(p.dataVencimento||p.dataVenda)<hoje&&(p.cliente||'').trim()!=='');
+  if(_finTab==='baixado')   lista=lista.filter(p=>p.status==='Baixado'&&(p.cliente||'').trim()!=='');
+  if(_finTab==='cancelado') lista=lista.filter(p=>isCancelado(p.status));
   // Tab "Todos" mostra tudo incluindo sem cliente, com aviso para exclusão
   lista.sort((a,b)=>new Date(a.dataVenda)-new Date(b.dataVenda));
   // Cards respeitam filtro de data quando ativo
   const base = (finDe||finAte) ? lista : todas; // se tem filtro, usa lista filtrada; senão usa tudo
-  const aRec   = base.filter(p=>p.status!=='Pago'&&p.status!=='Baixado').reduce((a,p)=>a+p.valorParcela,0);
+  const aRec   = base.filter(p=>p.status!=='Pago'&&p.status!=='Baixado'&&p.status!=='Venda Cancelada').reduce((a,p)=>a+p.valorParcela,0);
   const receb  = base.filter(p=>p.status==='Pago').reduce((a,p)=>a+p.valorParcela,0);
-  const baix   = todas.filter(p=>p.status==='Baixado').reduce((a,p)=>a+p.valorParcela,0); // baixado sempre global
-  const venc   = base.filter(p=>p.status!=='Pago'&&p.status!=='Baixado'&&parseDateBRtoObj(p.dataVencimento||p.dataVenda)<hoje).length;
+  const baix   = todas.filter(p=>p.status==='Baixado').reduce((a,p)=>a+p.valorParcela,0);
+  const canc   = todas.filter(p=>p.status==='Venda Cancelada').length;
+  const venc   = base.filter(p=>p.status!=='Pago'&&p.status!=='Baixado'&&p.status!=='Venda Cancelada'&&parseDateBRtoObj(p.dataVencimento||p.dataVenda)<hoje).length;
   const safe=(id,v)=>{const el=document.getElementById(id);if(el)el.textContent=v;};
-  safe('fin-receber',fmt(aRec));safe('fin-recebido',fmt(receb));safe('fin-vencidas',venc);safe('fin-baixado',fmt(baix));
+  safe('fin-receber',fmt(aRec));safe('fin-recebido',fmt(receb));safe('fin-vencidas',venc);safe('fin-baixado',fmt(baix));safe('fin-cancelado',canc);
   // ── Fluxo por mês (próximos meses) ──
   const fluxoEl = document.getElementById('fin-fluxo-mes');
   if (fluxoEl) {
@@ -2405,9 +2440,9 @@ function renderFinanceiro() {
   if(!lista.length){el.innerHTML='<div class="empty"><div class="empty-icon">💳</div><p>Nenhuma parcela encontrada</p></div>';return;}
   el.innerHTML=lista.map(p=>{
     const pago=p.status==='Pago', dtV=parseDateBRtoObj(p.dataVencimento||p.dataVenda), atras=!pago&&dtV<hoje;
-    const baixado=p.status==='Baixado'; const cor=baixado?'#bbb':atras?'var(--danger)':pago?'var(--success)':'var(--rosa)';
+    const baixado=p.status==='Baixado'; const cancelado=p.status==='Venda Cancelada'; const cor=cancelado?'#999':baixado?'#bbb':atras?'var(--danger)':pago?'var(--success)':'var(--rosa)';
     const btnStyle='font-size:10px;padding:3px 7px;border-radius:4px;cursor:pointer;border:none;font-weight:600;margin-top:3px;';
-    if (!pago && !baixado && !(p.cliente||'').trim()) {
+    if (!pago && !baixado && !cancelado && !(p.cliente||'').trim()) {
       // Registro inválido (sem cliente) — exibir só em "Todos" com opção de excluir
       return `<div class="card" style="margin-bottom:7px;border-left:3px solid #ccc;opacity:0.7">
         <div style="display:flex;justify-content:space-between;align-items:center">
@@ -2429,24 +2464,22 @@ function renderFinanceiro() {
           <div style="font-size:13px;font-weight:600">${p.cliente||'Sem cliente'}</div>
           <div style="font-size:11px;color:var(--text2)">${p.celular?p.celular+' · ':''}Maleta ${p.maleta||'—'}</div>
           <div style="font-size:11px;color:var(--text2)">Parcela ${p.numParcela}/${p.totalParcelas} · Vencimento: <strong>${fmtDataBR(p.dataVencimento||p.dataVenda)}</strong></div>
-          ${baixado?'<div style="font-size:10px;color:#999;font-weight:600">⬇️ BAIXADO</div>':atras?'<div style="font-size:10px;color:var(--danger);font-weight:600">⚠️ VENCIDA</div>':''}
+          ${cancelado?'<div style="font-size:10px;color:#999;font-weight:600">🚫 VENDA CANCELADA</div>':baixado?'<div style="font-size:10px;color:#999;font-weight:600">⬇️ BAIXADO</div>':atras?'<div style="font-size:10px;color:var(--danger);font-weight:600">⚠️ VENCIDA</div>':''}
           ${pago&&p.dataPagamento?`<div style="font-size:10px;color:var(--success);font-weight:600">✅ Pago em ${p.dataPagamento}</div>`:''}
         </div>
         <div style="text-align:right;margin-left:8px;min-width:80px">
           <div style="font-size:14px;font-weight:700;color:var(--rosa-dark)">${fmt(p.valorParcela)}</div>
-          ${!pago?`
-          <div style="display:grid;grid-template-columns:1fr 1fr;gap:3px;margin-top:4px">
-            <button onclick="toggleParcela('${p.vendaId}',${p.numParcela})"
-              style="${btnStyle}background:rgba(30,126,52,0.12);color:var(--success)">✅ Pago</button>
-            <button onclick="reprogramarParcela('${p.vendaId}',${p.numParcela})"
-              style="${btnStyle}background:rgba(241,183,156,0.2);color:var(--rosa-dark)">📅 Prazo</button>
-            <button onclick="cobrarCliente('${p.vendaId}',${p.numParcela})"
-              style="${btnStyle}background:rgba(37,211,102,0.12);color:#128C7E">💬 Cobrar</button>
-            <button onclick="baixarParcela('${p.vendaId}',${p.numParcela})"
-              style="${btnStyle}background:rgba(150,150,150,0.12);color:#777">⬇️ Baixar</button>
-            <button onclick="pagarParcial('${p.vendaId}',${p.numParcela})"
-              style="${btnStyle}background:rgba(241,183,156,0.2);color:var(--rosa-dark);grid-column:1/-1">$ Parcial</button>
-          </div>
+          ${!pago && !cancelado?`
+          <button onclick="toggleParcela('${p.vendaId}',${p.numParcela})"
+            style="${btnStyle}background:rgba(30,126,52,0.12);color:var(--success)">✅ Pago</button>
+          <button onclick="reprogramarParcela('${p.vendaId}',${p.numParcela})"
+            style="${btnStyle}background:rgba(241,183,156,0.2);color:var(--rosa-dark)">📅 Prazo</button>
+          <button onclick="cobrarCliente('${p.vendaId}',${p.numParcela})"
+            style="${btnStyle}background:rgba(37,211,102,0.12);color:#128C7E">💬 Cobrar</button>
+          <button onclick="baixarParcela('${p.vendaId}',${p.numParcela})"
+            style="${btnStyle}background:rgba(150,150,150,0.12);color:#777">⬇️ Baixar</button>
+          <button onclick="pagarParcial('${p.vendaId}',${p.numParcela})"
+            style="${btnStyle}background:rgba(241,183,156,0.2);color:var(--rosa-dark)">$ Parcial</button>
           `:`<div style="display:flex;flex-direction:column;gap:2px">
             <button onclick="toggleParcela('${p.vendaId}',${p.numParcela})"
               style="${btnStyle}background:rgba(201,168,76,0.1);color:var(--text2)">↩ Desfazer</button>
@@ -2498,6 +2531,8 @@ function getVendasFiltradas() {
   const mal=((document.getElementById('hist-maleta')||{}).value||'').trim();
   return _histVendas.filter(v=>{
     if (mal && String(v.num_maleta||'').trim() !== mal) return false;
+    const cli=((document.getElementById('hist-cliente')||{}).value||'').toLowerCase().trim();
+    if (cli && !(v.cliente||'').toLowerCase().includes(cli)) return false;
     if (!de && !ate) return true;
     const dt = parseDateVenda(v.data_venda);
     if (!dt) return true;
@@ -2642,6 +2677,29 @@ async function finalizarVenda() {
   save();updateStats();updateCartUI();renderMaletaCard();
 
   pushVendaSheets(venda, cliente);
+
+  // Lança entradas à vista (Pix/Dinheiro/Débito/Transferência) como Pago em "A receber"
+  const formasAvista = ['Pix','Dinheiro','Débito','Transferência'];
+  Object.entries(venda.pagamentos||{}).forEach(([metodo, valor]) => {
+    if (!formasAvista.includes(metodo) || !valor) return;
+    const dataHoje = new Date(venda.data).toLocaleDateString('pt-BR');
+    const vidAvista = venda.id + '_' + metodo.replace(/\s/g,'');
+    sheetsPost({action:'salvarParcela', parcela:{
+      VendaId:vidAvista, DataVenda:dataHoje,
+      Cliente:cliente?cliente.nome:'', Celular:cliente?cliente.tel||'':'',
+      Maleta:S.maleta.numero||'', ValorVenda:valor,
+      NumParcela:1, TotalParcelas:1, ValorParcela:valor,
+      Intervalo:0, DataVencimento:dataHoje, DataPagamento:dataHoje, Status:'Pago',
+    }});
+    S.areceber.push({
+      vendaId:vidAvista, dataVenda:dataHoje,
+      cliente:cliente?cliente.nome:'', celular:cliente?cliente.tel||'':'',
+      maleta:S.maleta.numero||'', valorVenda:valor,
+      numParcela:1, totalParcelas:1, valorParcela:valor,
+      intervalo:0, dataVencimento:dataHoje, dataPagamento:dataHoje, status:'Pago',
+    });
+  });
+
   if(parcelasInfo&&parcelasInfo.qtd>0){
     for(let pi=1;pi<=parcelasInfo.qtd;pi++){
       const dtBase=new Date(venda.data);dtBase.setDate(dtBase.getDate()+parcelasInfo.dias*pi);
@@ -3172,47 +3230,51 @@ function confirmarParcial() {
     }});
     toast('✅ Parcela paga integralmente!');
   } else {
-    // Pagamento parcial:
-    // 1. Marca parcela atual como Pago com o valor pago
-    S.areceber[idx].status = 'Pago';
+    // Pagamento parcial CORRETO:
+    // Título original: mantém valorParcela original, marca Pago com dataPagamento
+    // Novo título: somente o saldo residual, Pendente
+    // Assim: valorPago (Pago) + restante (Pendente) = valorParcela original ✓
+    // Atualiza localmente: mostra o valor que FOI PAGO (não o original)
+    S.areceber[idx].status        = 'Parcial';
     S.areceber[idx].dataPagamento = dataPag;
-    S.areceber[idx].valorParcela  = valorPago; // ajusta valor para o que foi pago
+    S.areceber[idx].valorParcela  = valorPago; // ← exibe o valor pago (10, não 23)
     sheetsPost({action:'salvarParcela',parcela:{
-      VendaId:p.vendaId,DataVenda:p.dataVenda,Cliente:p.cliente,Celular:p.celular,
-      Maleta:p.maleta,ValorVenda:p.valorVenda,NumParcela:p.numParcela,
-      TotalParcelas:p.totalParcelas,ValorParcela:valorPago,
-      Intervalo:p.intervalo||30,DataVencimento:p.dataVencimento||p.dataVenda,
-      DataPagamento:dataPag,Status:'Pago'
+      VendaId:p.vendaId, DataVenda:p.dataVenda, Cliente:p.cliente, Celular:p.celular,
+      Maleta:p.maleta, ValorVenda:p.valorVenda, NumParcela:p.numParcela,
+      TotalParcelas:p.totalParcelas, ValorParcela:valorPago, // grava o que foi pago
+      Intervalo:p.intervalo||30, DataVencimento:p.dataVencimento||p.dataVenda,
+      DataPagamento:dataPag, Status:'Parcial',
     }});
 
-    // 2. Cria novo título para o restante com nova data de vencimento (+intervalo dias)
+    // Cria novo título somente com o saldo residual
     const dtBase = parseDateBRtoObj(p.dataVencimento||p.dataVenda);
     dtBase.setDate(dtBase.getDate() + (p.intervalo||30));
     const novaData = dtBase.toLocaleDateString('pt-BR');
+    const novaVendaId = p.vendaId + '_p' + Date.now();
     const novaParc = {
-      vendaId:       p.vendaId+'_p'+Date.now(),
-      dataVenda:     p.dataVenda,
-      cliente:       p.cliente,
-      celular:       p.celular,
-      maleta:        p.maleta,
-      valorVenda:    restante,
-      numParcela:    1,
-      totalParcelas: 1,
-      valorParcela:  restante,
-      intervalo:     p.intervalo||30,
-      dataVencimento:novaData,
-      dataPagamento: '',
-      status:        'Pendente',
+      vendaId:        novaVendaId,
+      dataVenda:      p.dataVenda,
+      cliente:        p.cliente,
+      celular:        p.celular,
+      maleta:         p.maleta,
+      valorVenda:     restante,
+      numParcela:     1,
+      totalParcelas:  1,
+      valorParcela:   restante,
+      intervalo:      p.intervalo||30,
+      dataVencimento: novaData,
+      dataPagamento:  '',
+      status:         'Pendente',
     };
     S.areceber.push(novaParc);
     sheetsPost({action:'salvarParcela',parcela:{
-      VendaId:novaParc.vendaId,DataVenda:novaParc.dataVenda,Cliente:novaParc.cliente,
-      Celular:novaParc.celular,Maleta:novaParc.maleta,ValorVenda:restante,
-      NumParcela:1,TotalParcelas:1,ValorParcela:restante,
-      Intervalo:novaParc.intervalo,DataVencimento:novaData,
-      DataPagamento:'',Status:'Pendente'
+      VendaId:novaVendaId, DataVenda:p.dataVenda, Cliente:p.cliente,
+      Celular:p.celular, Maleta:p.maleta, ValorVenda:restante,
+      NumParcela:1, TotalParcelas:1, ValorParcela:restante,
+      Intervalo:p.intervalo||30, DataVencimento:novaData,
+      DataPagamento:'', Status:'Pendente'
     }});
-    toast(`✅ R$ ${valorPago.toFixed(2).replace('.',',')} pago. Novo título de ${fmt(restante)} criado para ${novaData}`);
+    toast('✅ ' + fmt(valorPago) + ' registrado. Saldo de ' + fmt(restante) + ' agendado para ' + novaData);
   }
 
   closeModal('modal-parcial');
@@ -3314,10 +3376,178 @@ function limparFiltroFin() {
 }
 
 function limparFiltroHist() {
-  ['hist-de','hist-ate','hist-maleta'].forEach(id=>{
+  ['hist-de','hist-ate','hist-maleta','hist-cliente'].forEach(id=>{
     const el=document.getElementById(id); if(el) el.value='';
   });
   renderHistorico();
+}
+
+// ═══════════════════════════════════════════════
+// PDF FINANCEIRO — A Receber
+// ═══════════════════════════════════════════════
+function gerarPDFFinanceiro() {
+  const { jsPDF } = window.jspdf;
+  if (!jsPDF) { toast('❌ jsPDF não carregou'); return; }
+  const doc = new jsPDF({ orientation:'portrait', unit:'mm', format:'a4' });
+  const W=210, mg=14, corH=[193,112,80], pr=[30,30,30], ci=[100,100,100];
+  let y=14;
+
+  // Cabeçalho
+  try { doc.addImage(document.querySelector('header img')?.src||'','PNG',mg,6,38,10); } catch(e){}
+  doc.setDrawColor(220,180,160); doc.setLineWidth(0.4); doc.line(mg,20,W-mg,20);
+  doc.setFontSize(9); doc.setFont('helvetica','bold'); doc.setTextColor(...pr);
+  doc.text('RELATÓRIO FINANCEIRO — A RECEBER', mg, 26);
+  doc.setFont('helvetica','normal'); doc.setTextColor(...ci); doc.setFontSize(8);
+  doc.text('Emitido em: '+new Date().toLocaleString('pt-BR'), W-mg, 26, {align:'right'});
+  doc.text('Consultora: '+(S.maleta.consultora||'—')+' · Maleta: '+(S.maleta.numero||'—'), mg, 31);
+  y=38;
+
+  // Filtros aplicados
+  const finDe=(document.getElementById('fin-de')||{}).value||'';
+  const finAte=(document.getElementById('fin-ate')||{}).value||'';
+  const finCli=((document.getElementById('fin-cliente')||{}).value||'').trim();
+  if (finDe||finAte||finCli) {
+    doc.setFontSize(7.5); doc.setTextColor(...ci);
+    doc.text('Filtros: '+(finDe?'De '+finDe+' ':'')+( finAte?'Até '+finAte+' ':'')+( finCli?'Cliente: '+finCli:''), mg, y);
+    y+=5;
+  }
+
+  // Totais
+  const toda = S.areceber.filter(p=>finCli?( p.cliente||'').toLowerCase().includes(finCli.toLowerCase()):true);
+  const aRec  = toda.filter(p=>p.status!=='Pago'&&p.status!=='Baixado').reduce((a,p)=>a+p.valorParcela,0);
+  const receb = toda.filter(p=>p.status==='Pago').reduce((a,p)=>a+p.valorParcela,0);
+  doc.setFillColor(...corH); doc.rect(mg,y,W-mg*2,7,'F');
+  doc.setFontSize(8); doc.setFont('helvetica','bold'); doc.setTextColor(255,255,255);
+  doc.text('A Receber: '+fmt(aRec), mg+3, y+4.8);
+  doc.text('Recebido: '+fmt(receb), W/2, y+4.8);
+  y+=10;
+
+  // Cabeçalho tabela
+  doc.setFillColor(80,40,20); doc.rect(mg,y,W-mg*2,6,'F');
+  doc.setFontSize(7.5); doc.setFont('helvetica','bold'); doc.setTextColor(255,255,255);
+  doc.text('Cliente', mg+2, y+4.2);
+  doc.text('Maleta', mg+52, y+4.2);
+  doc.text('Vencimento', mg+65, y+4.2);
+  doc.text('Parcela', mg+92, y+4.2);
+  doc.text('Valor', mg+112, y+4.2);
+  doc.text('Status', W-mg-3, y+4.2, {align:'right'});
+  y+=6;
+
+  // Linhas
+  let lista = [...toda].filter(p=>(p.cliente||'').trim()!=='');
+  if (finDe)  lista=lista.filter(p=>parseDateBRtoObj(p.dataVencimento||p.dataVenda)>=new Date(finDe));
+  if (finAte) lista=lista.filter(p=>parseDateBRtoObj(p.dataVencimento||p.dataVenda)<=new Date(finAte+'T23:59:59'));
+  lista.sort((a,b)=>parseDateBRtoObj(a.dataVencimento||a.dataVenda)-parseDateBRtoObj(b.dataVencimento||b.dataVenda));
+
+  lista.forEach((p,i)=>{
+    if(y>280){doc.addPage();y=14;}
+    doc.setFillColor(i%2===0?253:255,i%2===0?248:255,i%2===0?244:255);
+    doc.rect(mg,y,W-mg*2,5.5,'F');
+    const hoje=new Date();hoje.setHours(0,0,0,0);
+    const venc=parseDateBRtoObj(p.dataVencimento||p.dataVenda)<hoje&&p.status!=='Pago';
+    doc.setFont('helvetica','normal'); doc.setFontSize(7.5);
+    doc.setTextColor(venc?180:30,venc?20:30,venc?20:30);
+    doc.text((p.cliente||'').substring(0,22), mg+2, y+3.8);
+    doc.setTextColor(...pr);
+    doc.text(String(p.maleta||'—'), mg+52, y+3.8);
+    doc.text(fmtDataBR(p.dataVencimento||p.dataVenda), mg+65, y+3.8);
+    doc.text(p.numParcela+'/'+p.totalParcelas, mg+92, y+3.8);
+    doc.setFont('helvetica','bold');
+    doc.text(fmt(p.valorParcela), mg+112, y+3.8);
+    const sc=p.status==='Pago'?[30,126,52]:p.status==='Baixado'?[150,150,150]:[193,112,80];
+    doc.setTextColor(...sc);
+    doc.text(p.status||'Pendente', W-mg-3, y+3.8, {align:'right'});
+    y+=5.5;
+  });
+
+  const np=doc.internal.getNumberOfPages();
+  for(let pg=1;pg<=np;pg++){doc.setPage(pg);doc.setFontSize(7);doc.setTextColor(...ci);doc.text('Fressen Joias · Relatório Financeiro · Pág '+pg+'/'+np, W/2, 295, {align:'center'});}
+  doc.save('Financeiro_AReceber_'+new Date().toLocaleDateString('pt-BR').replace(/\//g,'-')+'.pdf');
+  toast('📄 PDF gerado!');
+}
+
+// ═══════════════════════════════════════════════
+// PDF HISTÓRICO — Vendas
+// ═══════════════════════════════════════════════
+function gerarPDFHistorico() {
+  const { jsPDF } = window.jspdf;
+  if (!jsPDF) { toast('❌ jsPDF não carregou'); return; }
+  const vf = getVendasFiltradas();
+  if (!vf.length) { toast('Nenhuma venda no filtro selecionado'); return; }
+
+  const doc = new jsPDF({ orientation:'portrait', unit:'mm', format:'a4' });
+  const W=210, mg=14, corH=[193,112,80], pr=[30,30,30], ci=[100,100,100];
+  let y=14;
+
+  // Cabeçalho
+  try { doc.addImage(document.querySelector('header img')?.src||'','PNG',mg,6,38,10); } catch(e){}
+  doc.setDrawColor(220,180,160); doc.setLineWidth(0.4); doc.line(mg,20,W-mg,20);
+  doc.setFontSize(9); doc.setFont('helvetica','bold'); doc.setTextColor(...pr);
+  doc.text('RELATÓRIO DE VENDAS — HISTÓRICO', mg, 26);
+  doc.setFont('helvetica','normal'); doc.setTextColor(...ci); doc.setFontSize(8);
+  doc.text('Emitido em: '+new Date().toLocaleString('pt-BR'), W-mg, 26, {align:'right'});
+  doc.text('Consultora: '+(S.maleta.consultora||'—'), mg, 31);
+  y=38;
+
+  // Filtros aplicados
+  const de=(document.getElementById('hist-de')||{}).value||'';
+  const ate=(document.getElementById('hist-ate')||{}).value||'';
+  const mal=((document.getElementById('hist-maleta')||{}).value||'').trim();
+  const cli=((document.getElementById('hist-cliente')||{}).value||'').trim();
+  const filtroTxt=[(de?'De '+de:''),(ate?'Até '+ate:''),(mal?'Maleta '+mal:''),(cli?'Cliente: '+cli:'')].filter(Boolean).join(' · ');
+  if(filtroTxt){doc.setFontSize(7.5);doc.setTextColor(...ci);doc.text('Filtros: '+filtroTxt,mg,y);y+=5;}
+
+  // Totais
+  const vendaMap={};
+  vf.forEach(v=>{if(!vendaMap[v.id_venda])vendaMap[v.id_venda]={...v,itens:[],total:0};vendaMap[v.id_venda].itens.push(v.descricao||v.ref);vendaMap[v.id_venda].total+=Number(v.preco||0);});
+  const totalGeral=vf.reduce((a,v)=>a+Number(v.preco||0),0);
+  const totalVendas=Object.keys(vendaMap).length;
+  doc.setFillColor(...corH); doc.rect(mg,y,W-mg*2,7,'F');
+  doc.setFontSize(8); doc.setFont('helvetica','bold'); doc.setTextColor(255,255,255);
+  doc.text('Total: '+fmt(totalGeral), mg+3, y+4.8);
+  doc.text(totalVendas+' venda(s) · '+vf.length+' item(ns)', W/2, y+4.8);
+  y+=10;
+
+  // Cabeçalho tabela
+  doc.setFillColor(80,40,20); doc.rect(mg,y,W-mg*2,6,'F');
+  doc.setFontSize(7.5); doc.setFont('helvetica','bold'); doc.setTextColor(255,255,255);
+  doc.text('Data', mg+2, y+4.2);
+  doc.text('Cliente', mg+22, y+4.2);
+  doc.text('Mal.', mg+62, y+4.2);
+  doc.text('Ref', mg+72, y+4.2);
+  doc.text('Grupo', mg+88, y+4.2);
+  doc.text('Pagamento', mg+110, y+4.2);
+  doc.text('Valor', W-mg-3, y+4.2, {align:'right'});
+  y+=6;
+
+  vf.forEach((v,i)=>{
+    if(y>280){doc.addPage();y=14;}
+    doc.setFillColor(i%2===0?253:255,i%2===0?248:255,i%2===0?244:255);
+    doc.rect(mg,y,W-mg*2,5.5,'F');
+    doc.setFont('helvetica','normal'); doc.setFontSize(7); doc.setTextColor(...pr);
+    const dtStr=(v.data_venda||'').substring(0,10);
+    doc.text(dtStr, mg+2, y+3.8);
+    doc.text((v.cliente||'Sem cliente').substring(0,18), mg+22, y+3.8);
+    doc.text(String(v.num_maleta||'—'), mg+62, y+3.8);
+    doc.text((v.ref||'').substring(0,10), mg+72, y+3.8);
+    doc.text((v.grupo||'').substring(0,8), mg+88, y+3.8);
+    doc.text((v.forma_pagamento||'').substring(0,16), mg+110, y+3.8);
+    doc.setFont('helvetica','bold');
+    doc.text(fmt(Number(v.preco||0)), W-mg-3, y+3.8, {align:'right'});
+    y+=5.5;
+  });
+
+  // Rodapé com total
+  if(y+8>280){doc.addPage();y=14;}
+  doc.setFillColor(193,112,80); doc.rect(mg,y+2,W-mg*2,7,'F');
+  doc.setFont('helvetica','bold'); doc.setFontSize(9); doc.setTextColor(255,255,255);
+  doc.text('TOTAL GERAL', mg+3, y+7);
+  doc.text(fmt(totalGeral), W-mg-3, y+7, {align:'right'});
+
+  const np=doc.internal.getNumberOfPages();
+  for(let pg=1;pg<=np;pg++){doc.setPage(pg);doc.setFontSize(7);doc.setTextColor(...ci);doc.text('Fressen Joias · Relatório de Vendas · Pág '+pg+'/'+np, W/2, 295, {align:'center'});}
+  doc.save('Vendas_Historico_'+new Date().toLocaleDateString('pt-BR').replace(/\//g,'-')+'.pdf');
+  toast('📄 PDF gerado!');
 }
 
 // INIT renders
